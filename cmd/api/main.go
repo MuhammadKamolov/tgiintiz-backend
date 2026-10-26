@@ -1,4 +1,12 @@
 package main
 
+import (
+	"log"
+	"tgiintiz/internal/app"
+)
+
 func main() {
+	if err := app.Run(); err != nil {
+		log.Fatalf("app failed: %v", err)
+	}
 }
