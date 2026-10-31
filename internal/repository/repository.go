@@ -15,6 +15,7 @@ type Repositories struct {
 type UserRepository interface {
 	Create(ctx context.Context, email string, hashPassword string) (*models.User, error)
 	GetByEmail(ctx context.Context, email string) (*models.User, error)
+	GetByID(ctx context.Context, id int64) (*models.User, error)
 }
 
 func NewRepositories(pool *pgxpool.Pool) *Repositories {

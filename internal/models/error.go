@@ -7,4 +7,5 @@ var (
 	ErrNotFound           = errors.New("not found")
 	ErrInvalidCredentials = errors.New("invalid email or password")
 	ErrInvalidInput       = errors.New("invalid input")
+	ErrInvalidToken       = errors.New("invalid or expired token")
 )

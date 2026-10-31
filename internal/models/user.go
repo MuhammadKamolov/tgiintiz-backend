@@ -26,3 +26,7 @@ type TokenPair struct {
 	AccessToken  string
 	RefreshToken string
 }
+type TokenPayload struct {
+	UserID int64
+	Role   string
+}

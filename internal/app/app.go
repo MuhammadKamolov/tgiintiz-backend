@@ -2,14 +2,20 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"tgiintiz/internal/config"
-	v1 "tgiintiz/internal/handler/v1"
+	"tgiintiz/internal/handler"
 	"tgiintiz/internal/repository"
 	"tgiintiz/internal/service"
 	"tgiintiz/internal/service/auth"
 	"tgiintiz/pkg/postgres"
+	"time"
 )
 
 func Run() error {
@@ -18,7 +24,8 @@ func Run() error {
 		return err
 	}
 
-	ctx := context.Background()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
 
 	pool, err := postgres.New(ctx, cfg.DB.DSN())
 	if err != nil {
@@ -34,13 +41,40 @@ func Run() error {
 		RefreshTTL: cfg.JWT.RefreshTTL,
 	})
 
-	apiV1 := v1.NewHandler(service)
-	routes := apiV1.InitRoutes()
+	handlers := handler.NewHandler(service)
 
-	fmt.Printf("HTTP server listening on %s\n", cfg.Server.Port)
-	if err := http.ListenAndServe(cfg.Server.Port, routes); err != nil {
-		return fmt.Errorf("server failed to start: %w", err)
+	server := &http.Server{
+		Addr:    cfg.Server.Port,
+		Handler: handlers.InitRoutes(),
 	}
+
+	return serve(ctx, server, 10*time.Second)
+}
+
+func serve(ctx context.Context, server *http.Server, shutdownTimeout time.Duration) error {
+	serverErrors := make(chan error, 1)
+	go func() {
+		slog.Info("server started", "addr", server.Addr)
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			serverErrors <- fmt.Errorf("server error: %w", err)
+		}
+	}()
+
+	select {
+	case err := <-serverErrors:
+		return fmt.Errorf("fatal server error: %w", err)
+	case <-ctx.Done():
+	}
+
+	slog.Info("shutting down")
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+	defer cancel()
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		server.Close()
+		return fmt.Errorf("could not stop server gracefully: %w", err)
+	}
+
+	slog.Info("server stopped gracefully")
 
 	return nil
 }

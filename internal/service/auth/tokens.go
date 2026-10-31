@@ -57,3 +57,37 @@ func registeredClaims(userID int64, now time.Time, ttl time.Duration) jwt.Regist
 func (s *Service) sign(claims tokenClaims) (string, error) {
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(s.jwtSecret)
 }
+
+func (s *Service) ParseToken(tokenStr string) (*models.TokenPayload, error) {
+	claims := &tokenClaims{}
+
+	parsedToken, err := jwt.ParseWithClaims(tokenStr, claims, func(t *jwt.Token) (any, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
+		}
+
+		return s.jwtSecret, nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("parse token: %w", err)
+	}
+
+	if !parsedToken.Valid {
+		return nil, models.ErrInvalidToken
+	}
+
+	if claims.Type != accessTokenType {
+		return nil, fmt.Errorf("%w: invalid token type", models.ErrInvalidToken)
+	}
+
+	userID, err := strconv.ParseInt(claims.Subject, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("%w: invalid user id in subject", models.ErrInvalidToken)
+	}
+
+	return &models.TokenPayload{
+		UserID: userID,
+		Role:   claims.Role,
+	}, nil
+}
