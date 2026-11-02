@@ -17,10 +17,12 @@ type AuthService interface {
 	Register(ctx context.Context, in models.RegisterInput) (*models.User, error)
 	Login(ctx context.Context, in models.LoginInput) (*models.TokenPair, error)
 	ParseToken(token string) (*models.TokenPayload, error)
+	Refresh(ctx context.Context, refreshToken string) (*models.TokenPair, error)
+	Logout(ctx context.Context, refreshToken string) error
 }
 
 func NewServices(repos *repository.Repositories, tokenCfg auth.TokenConfig) *Services {
-	authService := auth.NewService(repos.User, tokenCfg)
+	authService := auth.NewService(repos.User, repos.Session, tokenCfg)
 	userService := user.NewService(repos.User)
 
 	return &Services{

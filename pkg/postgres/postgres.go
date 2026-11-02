@@ -3,19 +3,25 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"net"
+	"net/url"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func New(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
-	cfg, err := pgxpool.ParseConfig(dsn)
-	if err != nil {
-		return nil, fmt.Errorf("parse postgres config: %w", err)
-	}
+type Config struct {
+	User     string
+	Password string
+	Host     string
+	Port     string
+	Name     string
+	SSLMode  string
+}
 
-	pool, err := pgxpool.NewWithConfig(ctx, cfg)
+func New(ctx context.Context, cfg Config) (*pgxpool.Pool, error) {
+	pool, err := pgxpool.New(ctx, cfg.dsn())
 	if err != nil {
-		return nil, fmt.Errorf("create connection pool: %w", err)
+		return nil, fmt.Errorf("create postgre pool: %w", err)
 	}
 
 	if err := pool.Ping(ctx); err != nil {
@@ -24,4 +30,16 @@ func New(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
 	}
 
 	return pool, nil
+}
+
+func (cfg Config) dsn() string {
+	u := url.URL{
+		Scheme:   "postgres",
+		User:     url.UserPassword(cfg.User, cfg.Password),
+		Host:     net.JoinHostPort(cfg.Host, cfg.Port),
+		Path:     cfg.Name,
+		RawQuery: url.Values{"sslmode": {cfg.SSLMode}}.Encode(),
+	}
+
+	return u.String()
 }

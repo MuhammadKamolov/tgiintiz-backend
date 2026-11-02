@@ -15,6 +15,7 @@ import (
 	"tgiintiz/internal/service"
 	"tgiintiz/internal/service/auth"
 	"tgiintiz/pkg/postgres"
+	"tgiintiz/pkg/redis"
 	"time"
 )
 
@@ -27,14 +28,35 @@ func Run() error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	pool, err := postgres.New(ctx, cfg.DB.DSN())
+	pool, err := postgres.New(ctx, postgres.Config{
+		Host:     cfg.DB.Host,
+		Port:     cfg.DB.Port,
+		User:     cfg.DB.User,
+		Password: cfg.DB.Password,
+		Name:     cfg.DB.Name,
+		SSLMode:  cfg.DB.SSLMode,
+	})
 	if err != nil {
 		return err
 	}
-
 	defer pool.Close()
 
-	repos := repository.NewRepositories(pool)
+	redisClient, err := redis.New(ctx, redis.Config{
+		Host:     cfg.Redis.Host,
+		Port:     cfg.Redis.Port,
+		Password: cfg.Redis.Password,
+		DB:       cfg.Redis.DB,
+	})
+	if err != nil {
+		return fmt.Errorf("init redis: %w", err)
+	}
+	defer func() {
+		if err := redisClient.Close(); err != nil {
+			slog.Error("failed to close redis", "error", err)
+		}
+	}()
+
+	repos := repository.NewRepositories(pool, redisClient)
 	service := service.NewServices(repos, auth.TokenConfig{
 		Secret:     cfg.JWT.Secret,
 		AccessTTL:  cfg.JWT.AccessTTL,
@@ -44,11 +66,13 @@ func Run() error {
 	handlers := handler.NewHandler(service)
 
 	server := &http.Server{
-		Addr:    cfg.Server.Port,
-		Handler: handlers.InitRoutes(),
+		Addr:         cfg.Server.Port,
+		Handler:      handlers.InitRoutes(),
+		ReadTimeout:  cfg.Server.ReadTimeout,
+		WriteTimeout: cfg.Server.WriteTimeout,
 	}
 
-	return serve(ctx, server, 10*time.Second)
+	return serve(ctx, server, cfg.Server.ShutdownTimeout)
 }
 
 func serve(ctx context.Context, server *http.Server, shutdownTimeout time.Duration) error {
