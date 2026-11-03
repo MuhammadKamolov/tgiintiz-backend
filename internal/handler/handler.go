@@ -25,6 +25,8 @@ func (h *Handler) InitRoutes() http.Handler {
 
 	mux.HandleFunc("POST /api/v1/auth/register", apiV1.Register)
 	mux.HandleFunc("POST /api/v1/auth/login", apiV1.Login)
+	mux.HandleFunc("POST /api/v1/auth/refresh", apiV1.Refresh)
+	mux.HandleFunc("POST /api/v1/auth/logout", apiV1.Logout)
 
 	mux.Handle("GET /api/v1/users/me", requireAuth(http.HandlerFunc(apiV1.Me)))
 

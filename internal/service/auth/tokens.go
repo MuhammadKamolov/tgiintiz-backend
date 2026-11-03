@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"context"
+	"crypto/rand"
 	"fmt"
 	"strconv"
 	"tgiintiz/internal/models"
@@ -20,11 +22,16 @@ type tokenClaims struct {
 	Role string `json:"role,omitempty"`
 }
 
-func (s *Service) newTokenPair(u *models.User) (*models.TokenPair, error) {
+func (s *Service) newTokenPair(ctx context.Context, u *models.User) (*models.TokenPair, error) {
+	sessionID := rand.Text()
+	if err := s.session.Create(ctx, sessionID, u.ID, s.refreshTTL); err != nil {
+		return nil, fmt.Errorf("create session: %w", err)
+	}
+
 	now := time.Now()
 
 	accessToken, err := s.sign(tokenClaims{
-		RegisteredClaims: registeredClaims(u.ID, now, s.accessTTL),
+		RegisteredClaims: registeredClaims(u.ID, sessionID, now, s.accessTTL),
 		Type:             accessTokenType,
 		Role:             u.Role,
 	})
@@ -33,7 +40,7 @@ func (s *Service) newTokenPair(u *models.User) (*models.TokenPair, error) {
 	}
 
 	refreshToken, err := s.sign(tokenClaims{
-		RegisteredClaims: registeredClaims(u.ID, now, s.refreshTTL),
+		RegisteredClaims: registeredClaims(u.ID, sessionID, now, s.refreshTTL),
 		Type:             refreshTokenType,
 		Role:             "",
 	})
@@ -46,9 +53,10 @@ func (s *Service) newTokenPair(u *models.User) (*models.TokenPair, error) {
 		RefreshToken: refreshToken}, nil
 }
 
-func registeredClaims(userID int64, now time.Time, ttl time.Duration) jwt.RegisteredClaims {
+func registeredClaims(userID int64, sessionID string, now time.Time, ttl time.Duration) jwt.RegisteredClaims {
 	return jwt.RegisteredClaims{
 		Subject:   strconv.FormatInt(userID, 10),
+		ID:        sessionID,
 		IssuedAt:  jwt.NewNumericDate(now),
 		ExpiresAt: jwt.NewNumericDate(now.Add(ttl)),
 	}
@@ -58,36 +66,34 @@ func (s *Service) sign(claims tokenClaims) (string, error) {
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(s.jwtSecret)
 }
 
-func (s *Service) ParseToken(tokenStr string) (*models.TokenPayload, error) {
+func (s *Service) parse(tokenStr string, wantType string) (*tokenClaims, error) {
 	claims := &tokenClaims{}
+	parsedToken, err := jwt.ParseWithClaims(tokenStr, claims,
+		func(*jwt.Token) (any, error) { return s.jwtSecret, nil },
 
-	parsedToken, err := jwt.ParseWithClaims(tokenStr, claims, func(t *jwt.Token) (any, error) {
-		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
-		}
-
-		return s.jwtSecret, nil
-	})
-
+		jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}),
+		jwt.WithExpirationRequired(),
+	)
 	if err != nil {
-		return nil, fmt.Errorf("parse token: %w", err)
+		return nil, fmt.Errorf("%w: %w", models.ErrInvalidToken, err)
 	}
 
 	if !parsedToken.Valid {
 		return nil, models.ErrInvalidToken
 	}
 
-	if claims.Type != accessTokenType {
-		return nil, fmt.Errorf("%w: invalid token type", models.ErrInvalidToken)
+	if claims.Type != wantType {
+		return nil, fmt.Errorf("%w: expected %s token, got %q", models.ErrInvalidToken, wantType, claims.Type)
 	}
 
-	userID, err := strconv.ParseInt(claims.Subject, 10, 64)
+	return claims, nil
+}
+
+func (c *tokenClaims) userID() (int64, error) {
+	userID, err := strconv.ParseInt(c.Subject, 10, 64)
 	if err != nil {
-		return nil, fmt.Errorf("%w: invalid user id in subject", models.ErrInvalidToken)
+		return 0, fmt.Errorf("%w: invalid user id in subject", models.ErrInvalidToken)
 	}
 
-	return &models.TokenPayload{
-		UserID: userID,
-		Role:   claims.Role,
-	}, nil
+	return userID, nil
 }

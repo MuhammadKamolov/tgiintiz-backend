@@ -56,3 +56,7 @@ func newTokenPairResponse(tokens *models.TokenPair) tokenPairResponse {
 		RefreshToken: tokens.RefreshToken,
 	}
 }
+
+type refreshTokenRequest struct {
+	RefreshToken string `json:"refresh_token"`
+}

@@ -22,7 +22,7 @@ func Auth(auth service.AuthService) func(http.Handler) http.Handler {
 				return
 			}
 
-			payload, err := auth.ParseToken(tokenStr)
+			payload, err := auth.Authenticate(r.Context(), tokenStr)
 			if err != nil {
 				response.Error(w, r, http.StatusUnauthorized, "invalid or expired token", err)
 				return

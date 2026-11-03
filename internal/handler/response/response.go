@@ -48,6 +48,8 @@ func ServiceError(w http.ResponseWriter, r *http.Request, err error) {
 		Error(w, r, http.StatusConflict, models.ErrEmailTaken.Error(), err)
 	case errors.Is(err, models.ErrNotFound):
 		Error(w, r, http.StatusNotFound, models.ErrNotFound.Error(), err)
+	case errors.Is(err, models.ErrInvalidToken):
+		Error(w, r, http.StatusUnauthorized, models.ErrInvalidToken.Error(), err)
 
 	default:
 		Error(w, r, http.StatusInternalServerError, "internal server error", err)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"tgiintiz/internal/models"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -39,8 +40,13 @@ func (s *sessionRepository) Exists(ctx context.Context, sessionID string) (bool,
 }
 
 func (s *sessionRepository) Delete(ctx context.Context, sessionID string) error {
-	if err := s.client.Del(ctx, key(sessionID)).Err(); err != nil {
+	deleted, err := s.client.Del(ctx, key(sessionID)).Result()
+	if err != nil {
 		return fmt.Errorf("delete session: %w", err)
+	}
+
+	if deleted == 0 {
+		return models.ErrNotFound
 	}
 
 	return nil

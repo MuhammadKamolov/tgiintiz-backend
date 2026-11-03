@@ -22,7 +22,7 @@ func (s *Service) Login(ctx context.Context, in models.LoginInput) (*models.Toke
 		return nil, models.ErrInvalidCredentials
 	}
 
-	tokenPair, err := s.newTokenPair(user)
+	tokenPair, err := s.newTokenPair(ctx, user)
 	if err != nil {
 		return nil, fmt.Errorf("create tokens: %w", err)
 	}
