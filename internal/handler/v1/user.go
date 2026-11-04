@@ -7,7 +7,7 @@ import (
 )
 
 func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
-	payload := middleware.GetUserPayload(r.Context())
+	payload := middleware.ClaimsFromContext(r.Context())
 
 	if payload == nil {
 		response.Error(w, r, http.StatusUnauthorized, "unauthorized", nil)

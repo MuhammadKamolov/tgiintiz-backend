@@ -35,7 +35,7 @@ func Auth(auth service.AuthService) func(http.Handler) http.Handler {
 	}
 }
 
-func GetUserPayload(ctx context.Context) *models.TokenPayload {
-	payload, _ := ctx.Value(userCtxKey).(*models.TokenPayload)
-	return payload
+func ClaimsFromContext(ctx context.Context) *models.TokenPayload {
+	claims, _ := ctx.Value(userCtxKey).(*models.TokenPayload)
+	return claims
 }
