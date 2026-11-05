@@ -7,14 +7,14 @@ import (
 )
 
 func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
-	payload := middleware.ClaimsFromContext(r.Context())
+	claims := middleware.ClaimsFromContext(r.Context())
 
-	if payload == nil {
+	if claims == nil {
 		response.Error(w, r, http.StatusUnauthorized, "unauthorized", nil)
 		return
 	}
 
-	user, err := h.service.User.GetByID(r.Context(), payload.UserID)
+	user, err := h.service.User.GetByID(r.Context(), claims.UserID)
 	if err != nil {
 		response.ServiceError(w, r, err)
 		return

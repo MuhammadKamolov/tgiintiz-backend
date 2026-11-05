@@ -5,12 +5,14 @@ import (
 	"tgiintiz/internal/models"
 	"tgiintiz/internal/repository"
 	"tgiintiz/internal/service/auth"
+	"tgiintiz/internal/service/survey"
 	"tgiintiz/internal/service/user"
 )
 
 type Services struct {
-	Auth AuthService
-	User UserService
+	Auth   AuthService
+	User   UserService
+	Survey SurveyService
 }
 
 type AuthService interface {
@@ -21,16 +23,24 @@ type AuthService interface {
 	Logout(ctx context.Context, refreshToken string) error
 }
 
-func NewServices(repos *repository.Repositories, tokenCfg auth.TokenConfig) *Services {
-	authService := auth.NewService(repos.User, repos.Session, tokenCfg)
-	userService := user.NewService(repos.User)
-
-	return &Services{
-		Auth: authService,
-		User: userService,
-	}
-}
-
 type UserService interface {
 	GetByID(ctx context.Context, id int64) (*models.User, error)
+}
+
+type SurveyService interface {
+	Create(ctx context.Context, userID int64, in models.SurveyRequestInput) (*models.SurveyRequest, error)
+	GetByID(ctx context.Context, id int64, userID int64) (*models.SurveyRequest, error)
+	ListByUserID(ctx context.Context, userID int64) ([]*models.SurveyRequest, error)
+}
+
+func NewServices(repos *repository.Repositories, tokenCfg auth.TokenConfig) *Services {
+	authService := auth.New(repos.User, repos.Session, tokenCfg)
+	userService := user.New(repos.User)
+	surveyService := survey.New(repos.Survey)
+
+	return &Services{
+		Auth:   authService,
+		User:   userService,
+		Survey: surveyService,
+	}
 }

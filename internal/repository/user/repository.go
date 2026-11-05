@@ -1,4 +1,4 @@
-package repository
+package user
 
 import (
 	"context"
@@ -12,12 +12,12 @@ import (
 
 const uniqueViolation = "23505"
 
-type userRepository struct {
+type repository struct {
 	q *sqlc.Queries
 }
 
-func NewUserRepository(q *sqlc.Queries) *userRepository {
-	return &userRepository{q: q}
+func New(q *sqlc.Queries) *repository {
+	return &repository{q: q}
 }
 
 func toModel(u sqlc.User) *models.User {
@@ -30,7 +30,7 @@ func toModel(u sqlc.User) *models.User {
 	}
 }
 
-func (r *userRepository) Create(ctx context.Context, email string, hashPassword string) (*models.User, error) {
+func (r *repository) Create(ctx context.Context, email string, hashPassword string) (*models.User, error) {
 	args := sqlc.CreateUserParams{
 		Email:        email,
 		PasswordHash: hashPassword,
@@ -49,7 +49,7 @@ func (r *userRepository) Create(ctx context.Context, email string, hashPassword 
 	return toModel(user), nil
 }
 
-func (r *userRepository) GetByEmail(ctx context.Context, email string) (*models.User, error) {
+func (r *repository) GetByEmail(ctx context.Context, email string) (*models.User, error) {
 	user, err := r.q.GetUserByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -61,7 +61,7 @@ func (r *userRepository) GetByEmail(ctx context.Context, email string) (*models.
 	return toModel(user), nil
 }
 
-func (r *userRepository) GetByID(ctx context.Context, id int64) (*models.User, error) {
+func (r *repository) GetByID(ctx context.Context, id int64) (*models.User, error) {
 	user, err := r.q.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {

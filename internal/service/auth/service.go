@@ -19,7 +19,7 @@ type Service struct {
 	refreshTTL time.Duration
 }
 
-func NewService(
+func New(
 	users repository.UserRepository,
 	session repository.SessionRepository,
 	tokens TokenConfig,

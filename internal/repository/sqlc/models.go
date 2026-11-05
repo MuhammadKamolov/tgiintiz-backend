@@ -8,6 +8,17 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type SurveyRequest struct {
+	ID          int64
+	UserID      int64
+	Title       string
+	Location    pgtype.Text
+	Description pgtype.Text
+	Status      string
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+}
+
 type User struct {
 	ID           int64
 	Email        string

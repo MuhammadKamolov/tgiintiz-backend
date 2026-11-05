@@ -4,6 +4,8 @@ import (
 	"context"
 	"tgiintiz/internal/models"
 	"tgiintiz/internal/repository/sqlc"
+	surveyRepo "tgiintiz/internal/repository/survey"
+	userRepo "tgiintiz/internal/repository/user"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -12,6 +14,7 @@ import (
 
 type Repositories struct {
 	User    UserRepository
+	Survey  SurveyRepository
 	Session SessionRepository
 }
 
@@ -21,17 +24,24 @@ type UserRepository interface {
 	GetByID(ctx context.Context, id int64) (*models.User, error)
 }
 
-func NewRepositories(pool *pgxpool.Pool, redisClient *redis.Client) *Repositories {
-	q := sqlc.New(pool)
-
-	return &Repositories{
-		User:    NewUserRepository(q),
-		Session: NewSessionRepository(redisClient),
-	}
-}
-
 type SessionRepository interface {
 	Create(ctx context.Context, sessionID string, userID int64, ttl time.Duration) error
 	Exists(ctx context.Context, sessionID string) (bool, error)
 	Delete(ctx context.Context, sessionID string) error
+}
+
+type SurveyRepository interface {
+	Create(ctx context.Context, userID int64, title string, location string, description string) (*models.SurveyRequest, error)
+	GetByID(ctx context.Context, id int64) (*models.SurveyRequest, error)
+	ListByUserID(ctx context.Context, userID int64) ([]*models.SurveyRequest, error)
+}
+
+func NewRepositories(pool *pgxpool.Pool, redisClient *redis.Client) *Repositories {
+	q := sqlc.New(pool)
+
+	return &Repositories{
+		User:    userRepo.New(q),
+		Survey:  surveyRepo.New(q),
+		Session: NewSessionRepository(redisClient),
+	}
 }

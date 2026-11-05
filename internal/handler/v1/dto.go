@@ -29,6 +29,20 @@ func (req loginRequest) toInput() models.LoginInput {
 	}
 }
 
+type surveyRequest struct {
+	Title       string `json:"title"`
+	Location    string `json:"location"`
+	Description string `json:"description"`
+}
+
+func (req surveyRequest) toInput() models.SurveyRequestInput {
+	return models.SurveyRequestInput{
+		Title:       req.Title,
+		Location:    req.Location,
+		Description: req.Description,
+	}
+}
+
 type userResponse struct {
 	ID        int64     `json:"id"`
 	Email     string    `json:"email"`
@@ -42,6 +56,26 @@ func newUserResponse(u *models.User) userResponse {
 		Email:     u.Email,
 		Role:      u.Role,
 		CreatedAt: u.CreatedAt,
+	}
+}
+
+type surveyResponse struct {
+	ID          int64     `json:"id"`
+	Title       string    `json:"title"`
+	Location    string    `json:"location"`
+	Description string    `json:"description"`
+	Status      string    `json:"status"`
+	CreatedAt   time.Time `json:"created_at"`
+}
+
+func newSurveyResponse(u *models.SurveyRequest) surveyResponse {
+	return surveyResponse{
+		ID:          u.ID,
+		Title:       u.Title,
+		Location:    u.Location,
+		Description: u.Description,
+		Status:      u.Status,
+		CreatedAt:   u.CreatedAt,
 	}
 }
 
