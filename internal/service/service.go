@@ -18,7 +18,7 @@ type Services struct {
 type AuthService interface {
 	Register(ctx context.Context, in models.RegisterInput) (*models.User, error)
 	Login(ctx context.Context, in models.LoginInput) (*models.TokenPair, error)
-	Authenticate(ctx context.Context, token string) (*models.TokenPayload, error)
+	Authenticate(ctx context.Context, token string) (*models.TokenClaims, error)
 	Refresh(ctx context.Context, refreshToken string) (*models.TokenPair, error)
 	Logout(ctx context.Context, refreshToken string) error
 }

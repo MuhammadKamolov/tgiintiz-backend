@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"log/slog"
 	"time"
 
 	"github.com/caarlos0/env/v11"
@@ -11,10 +12,17 @@ import (
 )
 
 type Config struct {
+	App    App
 	Server ServerConfig
 	DB     DBConfig
 	JWT    JWTConfig
 	Redis  RedisConfig
+}
+
+type App struct {
+	Env      string     `env:"APP_ENV" envDefault:"local"`
+	LogLevel slog.Level `env:"LOG_LEVEL" envDefault:"info"`
+	LogFile  string     `env:"LOG_FILE" envDefault:"app.log"`
 }
 
 type ServerConfig struct {

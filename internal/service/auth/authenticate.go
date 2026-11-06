@@ -6,7 +6,7 @@ import (
 	"tgiintiz/internal/models"
 )
 
-func (s *Service) Authenticate(ctx context.Context, token string) (*models.TokenPayload, error) {
+func (s *Service) Authenticate(ctx context.Context, token string) (*models.TokenClaims, error) {
 	claims, err := s.parse(token, accessTokenType)
 	if err != nil {
 		return nil, fmt.Errorf("parse access token: %w", err)
@@ -26,7 +26,7 @@ func (s *Service) Authenticate(ctx context.Context, token string) (*models.Token
 		return nil, fmt.Errorf("%w: session revoked", models.ErrInvalidToken)
 	}
 
-	return &models.TokenPayload{
+	return &models.TokenClaims{
 		UserID: userID,
 		Role:   claims.Role,
 	}, nil

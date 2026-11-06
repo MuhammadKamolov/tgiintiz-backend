@@ -1,0 +1,5 @@
+.env
+*.log
+app.log
+main
+.DS_Store

@@ -14,6 +14,7 @@ import (
 	"tgiintiz/internal/repository"
 	"tgiintiz/internal/service"
 	"tgiintiz/internal/service/auth"
+	"tgiintiz/pkg/logger"
 	"tgiintiz/pkg/postgres"
 	"tgiintiz/pkg/redis"
 	"time"
@@ -24,6 +25,17 @@ func Run() error {
 	if err != nil {
 		return err
 	}
+
+	log, closeLog, err := logger.New(logger.Config{
+		Env:   cfg.App.Env,
+		Level: cfg.App.LogLevel,
+		File:  cfg.App.LogFile,
+	})
+	if err != nil {
+		return fmt.Errorf("init logger: %w", err)
+	}
+	defer closeLog()
+	slog.SetDefault(log)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()

@@ -11,7 +11,7 @@ import (
 
 type contextKey string
 
-const userCtxKey contextKey = "user_payload"
+const userCtxKey contextKey = "user_claims"
 
 func Auth(auth service.AuthService) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
@@ -22,20 +22,20 @@ func Auth(auth service.AuthService) func(http.Handler) http.Handler {
 				return
 			}
 
-			payload, err := auth.Authenticate(r.Context(), tokenStr)
+			claims, err := auth.Authenticate(r.Context(), tokenStr)
 			if err != nil {
 				response.Error(w, r, http.StatusUnauthorized, "invalid or expired token", err)
 				return
 			}
 
-			ctx := context.WithValue(r.Context(), userCtxKey, payload)
+			ctx := context.WithValue(r.Context(), userCtxKey, claims)
 
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }
 
-func ClaimsFromContext(ctx context.Context) *models.TokenPayload {
-	claims, _ := ctx.Value(userCtxKey).(*models.TokenPayload)
+func ClaimsFromContext(ctx context.Context) *models.TokenClaims {
+	claims, _ := ctx.Value(userCtxKey).(*models.TokenClaims)
 	return claims
 }

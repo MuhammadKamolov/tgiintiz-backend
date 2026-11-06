@@ -30,5 +30,9 @@ func (h *Handler) InitRoutes() http.Handler {
 
 	mux.Handle("GET /api/v1/users/me", requireAuth(http.HandlerFunc(apiV1.Me)))
 
+	mux.Handle("POST /api/v1/surveys", requireAuth(http.HandlerFunc(apiV1.CreateSurvey)))
+	mux.Handle("GET /api/v1/surveys/{id}", requireAuth(http.HandlerFunc(apiV1.GetSurveyByID)))
+	mux.Handle("GET /api/v1/surveys", requireAuth(http.HandlerFunc(apiV1.ListMySurveys)))
+
 	return middleware.Logging(middleware.Recover(mux))
 }

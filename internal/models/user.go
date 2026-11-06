@@ -26,7 +26,7 @@ type TokenPair struct {
 	AccessToken  string
 	RefreshToken string
 }
-type TokenPayload struct {
+type TokenClaims struct {
 	UserID int64
 	Role   string
 }

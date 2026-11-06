@@ -8,7 +8,6 @@ import (
 
 func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
 	claims := middleware.ClaimsFromContext(r.Context())
-
 	if claims == nil {
 		response.Error(w, r, http.StatusUnauthorized, "unauthorized", nil)
 		return
