@@ -62,14 +62,17 @@ func (r *repository) GetByID(ctx context.Context, id int64) (*models.SurveyReque
 	return toModel(row), nil
 }
 
-func (r *repository) ListByUserID(ctx context.Context, userID int64) ([]*models.SurveyRequest, error) {
-	rows, err := r.q.ListSurveyRequestsByUserID(ctx, userID)
+func (r *repository) ListByUserID(ctx context.Context, userID int64, limit, offset int32) ([]*models.SurveyRequest, error) {
+	rows, err := r.q.ListSurveyRequestsByUserID(ctx, sqlc.ListSurveyRequestsByUserIDParams{
+		UserID: userID,
+		Limit:  limit,
+		Offset: offset,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("survey repository: list by user id: %w", err)
 	}
 
 	survey := make([]*models.SurveyRequest, 0, len(rows))
-
 	for _, row := range rows {
 		survey = append(survey, toModel(row))
 	}
@@ -77,14 +80,16 @@ func (r *repository) ListByUserID(ctx context.Context, userID int64) ([]*models.
 	return survey, nil
 }
 
-func (r *repository) ListAll(ctx context.Context) ([]*models.SurveyRequest, error) {
-	rows, err := r.q.ListSurveyRequests(ctx)
+func (r *repository) ListAll(ctx context.Context, limit, ofset int32) ([]*models.SurveyRequest, error) {
+	rows, err := r.q.ListSurveyRequests(ctx, sqlc.ListSurveyRequestsParams{
+		Limit:  limit,
+		Offset: ofset,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("survey repository: list all: %w", err)
 	}
 
 	survey := make([]*models.SurveyRequest, 0, len(rows))
-
 	for _, row := range rows {
 		survey = append(survey, toModel(row))
 	}
@@ -92,14 +97,17 @@ func (r *repository) ListAll(ctx context.Context) ([]*models.SurveyRequest, erro
 	return survey, nil
 }
 
-func (r *repository) ListByStatus(ctx context.Context, status string) ([]*models.SurveyRequest, error) {
-	rows, err := r.q.ListSurveyRequestsByStatus(ctx, status)
+func (r *repository) ListByStatus(ctx context.Context, status string, limit, ofset int32) ([]*models.SurveyRequest, error) {
+	rows, err := r.q.ListSurveyRequestsByStatus(ctx, sqlc.ListSurveyRequestsByStatusParams{
+		Status: status,
+		Limit:  limit,
+		Offset: ofset,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("survey repository: list by status: %w", err)
 	}
 
 	survey := make([]*models.SurveyRequest, 0, len(rows))
-
 	for _, row := range rows {
 		survey = append(survey, toModel(row))
 	}

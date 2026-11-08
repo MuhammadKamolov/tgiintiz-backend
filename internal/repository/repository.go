@@ -33,9 +33,9 @@ type SessionRepository interface {
 type SurveyRepository interface {
 	Create(ctx context.Context, userID int64, title string, location string, description string) (*models.SurveyRequest, error)
 	GetByID(ctx context.Context, id int64) (*models.SurveyRequest, error)
-	ListByUserID(ctx context.Context, userID int64) ([]*models.SurveyRequest, error)
-	ListAll(ctx context.Context) ([]*models.SurveyRequest, error)
-	ListByStatus(ctx context.Context, status string) ([]*models.SurveyRequest, error)
+	ListByUserID(ctx context.Context, userID int64, limit, offset int32) ([]*models.SurveyRequest, error)
+	ListAll(ctx context.Context, limit, ofset int32) ([]*models.SurveyRequest, error)
+	ListByStatus(ctx context.Context, status string, limit, ofset int32) ([]*models.SurveyRequest, error)
 	UpdateStatus(ctx context.Context, id int64, status string) (*models.SurveyRequest, error)
 	Delete(ctx context.Context, id int64) error
 }

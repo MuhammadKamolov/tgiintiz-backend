@@ -1,406 +1,467 @@
 {
-  "info": {
-    "name": "TGIINTIZ API (Full: Auth & Surveys)",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-  },
-  "variable": [
-    {
-      "key": "base_url",
-      "value": "http://localhost:8080/api/v1"
-    },
-    {
-      "key": "access_token",
-      "value": ""
-    },
-    {
-      "key": "refresh_token",
-      "value": ""
-    },
-    {
-      "key": "survey_id",
-      "value": ""
-    }
-  ],
-  "item": [
-    {
-      "name": "1. Register",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Status code is 201 or 409 (already exists)\", function () {",
-              "    pm.expect(pm.response.code).to.be.oneOf([201, 409]);",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"email\": \"engineer@giintiz.tj\",\n  \"password\": \"Secret123!\"\n}"
-        },
-        "url": {
-          "raw": "{{base_url}}/auth/register",
-          "host": ["{{base_url}}"],
-          "path": ["auth", "register"]
-        }
-      }
-    },
-    {
-      "name": "2. Login (Auto-save tokens)",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Status code is 200 OK\", function () {",
-              "    pm.response.to.have.status(200);",
-              "});",
-              "",
-              "if (pm.response.code === 200) {",
-              "    var jsonData = pm.response.json();",
-              "    pm.collectionVariables.set(\"access_token\", jsonData.access_token);",
-              "    pm.collectionVariables.set(\"refresh_token\", jsonData.refresh_token);",
-              "    console.log(\"Tokens successfully saved!\");",
-              "}"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"email\": \"engineer@giintiz.tj\",\n  \"password\": \"Secret123!\"\n}"
-        },
-        "url": {
-          "raw": "{{base_url}}/auth/login",
-          "host": ["{{base_url}}"],
-          "path": ["auth", "login"]
-        }
-      }
-    },
-    {
-      "name": "3. Get Me (Protected)",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Status code is 200 OK\", function () {",
-              "    pm.response.to.have.status(200);",
-              "});",
-              "pm.test(\"Profile contains valid email and id\", function () {",
-              "    var json = pm.response.json();",
-              "    pm.expect(json.id).to.be.a(\"number\");",
-              "    pm.expect(json.email).to.eql(\"engineer@giintiz.tj\");",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{access_token}}"
-          }
-        ],
-        "url": {
-          "raw": "{{base_url}}/users/me",
-          "host": ["{{base_url}}"],
-          "path": ["users", "me"]
-        }
-      }
-    },
-    {
-      "name": "4. Create Survey (Success & Auto-save ID)",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Status code is 201 Created\", function () {",
-              "    pm.response.to.have.status(201);",
-              "});",
-              "",
-              "pm.test(\"Survey request response has expected structure\", function () {",
-              "    var json = pm.response.json();",
-              "    pm.expect(json).to.have.property(\"id\");",
-              "    pm.expect(json.title).to.eql(\"Инженерно-геологические изыскания: Объект №104\");",
-              "    pm.expect(json.status).to.eql(\"pending\");",
-              "});",
-              "",
-              "if (pm.response.code === 201) {",
-              "    var jsonData = pm.response.json();",
-              "    pm.collectionVariables.set(\"survey_id\", jsonData.id);",
-              "    console.log(\"Saved survey_id:\", jsonData.id);",
-              "}"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          },
-          {
-            "key": "Authorization",
-            "value": "Bearer {{access_token}}"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"title\": \"Инженерно-геологические изыскания: Объект №104\",\n  \"location\": \"г. Душанбе, р-н Сино\",\n  \"description\": \"Бурение трёх скважин глубиной 15 метров с отбором монолитов\"\n}"
-        },
-        "url": {
-          "raw": "{{base_url}}/surveys",
-          "host": ["{{base_url}}"],
-          "path": ["surveys"]
-        }
-      }
-    },
-    {
-      "name": "5. Create Survey (Negative: Empty Title)",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Status code is 400 Bad Request on empty title\", function () {",
-              "    pm.response.to.have.status(400);",
-              "});",
-              "pm.test(\"Returns error object\", function () {",
-              "    var json = pm.response.json();",
-              "    pm.expect(json).to.have.property(\"error\");",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          },
-          {
-            "key": "Authorization",
-            "value": "Bearer {{access_token}}"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"title\": \"   \",\n  \"location\": \"г. Душанбе\",\n  \"description\": \"Тест пустой валидации\"\n}"
-        },
-        "url": {
-          "raw": "{{base_url}}/surveys",
-          "host": ["{{base_url}}"],
-          "path": ["surveys"]
-        }
-      }
-    },
-    {
-      "name": "6. List My Surveys",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Status code is 200 OK\", function () {",
-              "    pm.response.to.have.status(200);",
-              "});",
-              "pm.test(\"Response is an array with created survey\", function () {",
-              "    var json = pm.response.json();",
-              "    pm.expect(json).to.be.an(\"array\");",
-              "    pm.expect(json.length).to.be.at.least(1);",
-              "    var createdId = pm.collectionVariables.get(\"survey_id\");",
-              "    if (createdId) {",
-              "        var found = json.some(function(item) { return item.id == createdId; });",
-              "        pm.expect(found).to.be.true;",
-              "    }",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{access_token}}"
-          }
-        ],
-        "url": {
-          "raw": "{{base_url}}/surveys",
-          "host": ["{{base_url}}"],
-          "path": ["surveys"]
-        }
-      }
-    },
-    {
-      "name": "7. Get Survey By ID",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Status code is 200 OK\", function () {",
-              "    pm.response.to.have.status(200);",
-              "});",
-              "pm.test(\"Fetched correct survey ID\", function () {",
-              "    var json = pm.response.json();",
-              "    var expectedId = pm.collectionVariables.get(\"survey_id\");",
-              "    pm.expect(json.id).to.eql(Number(expectedId));",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{access_token}}"
-          }
-        ],
-        "url": {
-          "raw": "{{base_url}}/surveys/{{survey_id}}",
-          "host": ["{{base_url}}"],
-          "path": ["surveys", "{{survey_id}}"]
-        }
-      }
-    },
-    {
-      "name": "8. Get Survey By ID (Negative: Not Found)",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Status code is 404 Not Found\", function () {",
-              "    pm.response.to.have.status(404);",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{access_token}}"
-          }
-        ],
-        "url": {
-          "raw": "{{base_url}}/surveys/9999999",
-          "host": ["{{base_url}}"],
-          "path": ["surveys", "9999999"]
-        }
-      }
-    },
-    {
-      "name": "9. Refresh Token (Auto-rotate)",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "if (pm.response.code === 200) {",
-              "    var jsonData = pm.response.json();",
-              "    pm.collectionVariables.set(\"access_token\", jsonData.access_token);",
-              "    pm.collectionVariables.set(\"refresh_token\", jsonData.refresh_token);",
-              "    console.log(\"Tokens rotated!\");",
-              "}"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
-        },
-        "url": {
-          "raw": "{{base_url}}/auth/refresh",
-          "host": ["{{base_url}}"],
-          "path": ["auth", "refresh"]
-        }
-      }
-    },
-    {
-      "name": "10. Logout",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "if (pm.response.code === 204) {",
-              "    pm.collectionVariables.set(\"access_token\", \"\");",
-              "    pm.collectionVariables.set(\"refresh_token\", \"\");",
-              "}"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
-        },
-        "url": {
-          "raw": "{{base_url}}/auth/logout",
-          "host": ["{{base_url}}"],
-          "path": ["auth", "logout"]
-        }
-      }
-    }
-  ]
+	"info": {
+		"_postman_id": "tgiintiz-api-full-collection",
+		"name": "TGIINTIZ API (Full: Auth & Surveys)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "POST 1. Register",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"password123\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/auth/register",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST 2. Login (Auto-save tokens)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const res = pm.response.json();",
+							"if (res.access_token) {",
+							"    pm.collectionVariables.set('accessToken', res.access_token);",
+							"}",
+							"if (res.refresh_token) {",
+							"    pm.collectionVariables.set('refreshToken', res.refresh_token);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"password123\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/auth/login",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET 3. Get Me (Protected)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/users/me",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"users",
+						"me"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST 4. Create Survey (Success & Auto-save ID)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const res = pm.response.json();",
+							"if (res.id) {",
+							"    pm.collectionVariables.set('surveyId', res.id);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"Инженерно-геологические изыскания объекта №1\",\n    \"description\": \"Бурение скважин глубиной до 15 метров с отбором проб грунта\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/surveys",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"surveys"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST 5. Create Survey (Negative: Empty Title)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"\",\n    \"description\": \"Тест на отсечение пустых данных\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/surveys",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"surveys"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET 6. List My Surveys (With Pagination)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/surveys?page=1&page_size=10",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"surveys"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "page_size",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET 7. Get Survey By ID",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/surveys/{{surveyId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"surveys",
+						"{{surveyId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET 8. Get Survey By ID (Negative: Not Found)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/surveys/99999",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"surveys",
+						"99999"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST 9. Refresh Token (Auto-rotate)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const res = pm.response.json();",
+							"if (res.access_token) {",
+							"    pm.collectionVariables.set('accessToken', res.access_token);",
+							"}",
+							"if (res.refresh_token) {",
+							"    pm.collectionVariables.set('refreshToken', res.refresh_token);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"refresh_token\": \"{{refreshToken}}\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/auth/refresh",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"refresh"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST 10. Logout",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"refresh_token\": \"{{refreshToken}}\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/auth/logout",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"logout"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET 11. Admin: List Surveys (Pagination & Status)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/admin/surveys?status=&page=1&page_size=10",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"admin",
+						"surveys"
+					],
+					"query": [
+						{
+							"key": "status",
+							"value": "",
+							"description": "Фильтр по статусу (например: pending, in_progress, completed, rejected). Оставь пустым для всех."
+						},
+						{
+							"key": "page",
+							"value": "1",
+							"description": "Номер страницы (от 1)"
+						},
+						{
+							"key": "page_size",
+							"value": "10",
+							"description": "Количество записей (1-100)"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PATCH 12. Admin: Update Survey Status",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"status\": \"in_progress\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/admin/surveys/{{surveyId}}/status",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"admin",
+						"surveys",
+						"{{surveyId}}",
+						"status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DELETE 13. Admin: Delete Survey",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/admin/surveys/{{surveyId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"admin",
+						"surveys",
+						"{{surveyId}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080"
+		},
+		{
+			"key": "accessToken",
+			"value": ""
+		},
+		{
+			"key": "refreshToken",
+			"value": ""
+		},
+		{
+			"key": "surveyId",
+			"value": "1"
+		}
+	]
 }

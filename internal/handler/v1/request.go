@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"tgiintiz/internal/handler/response"
+	"tgiintiz/internal/models"
 )
 
 const maxBodyBytes = 1 << 20
@@ -21,4 +22,13 @@ func decodeJSON(w http.ResponseWriter, r *http.Request, dst any) bool {
 
 func parseID(r *http.Request) (int64, error) {
 	return strconv.ParseInt(r.PathValue("id"), 10, 64)
+}
+
+func parsePagination(r *http.Request) models.Pagination {
+	q := r.URL.Query()
+
+	page, _ := strconv.Atoi(q.Get("page"))
+	pageSize, _ := strconv.Atoi(q.Get("page_size"))
+
+	return models.NewPagination(page, pageSize)
 }

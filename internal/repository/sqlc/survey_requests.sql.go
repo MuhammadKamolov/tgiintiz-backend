@@ -81,10 +81,16 @@ const listSurveyRequests = `-- name: ListSurveyRequests :many
 SELECT id, user_id, title, location, description, status, created_at, updated_at
 FROM survey_requests
 ORDER BY created_at DESC
+LIMIT $1 OFFSET $2
 `
 
-func (q *Queries) ListSurveyRequests(ctx context.Context) ([]SurveyRequest, error) {
-	rows, err := q.db.Query(ctx, listSurveyRequests)
+type ListSurveyRequestsParams struct {
+	Limit  int32
+	Offset int32
+}
+
+func (q *Queries) ListSurveyRequests(ctx context.Context, arg ListSurveyRequestsParams) ([]SurveyRequest, error) {
+	rows, err := q.db.Query(ctx, listSurveyRequests, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -115,11 +121,19 @@ func (q *Queries) ListSurveyRequests(ctx context.Context) ([]SurveyRequest, erro
 const listSurveyRequestsByStatus = `-- name: ListSurveyRequestsByStatus :many
 SELECT id, user_id, title, location, description, status, created_at, updated_at
 FROM survey_requests
-WHERE status = $1 ORDER BY created_at DESC
+WHERE status = $1
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3
 `
 
-func (q *Queries) ListSurveyRequestsByStatus(ctx context.Context, status string) ([]SurveyRequest, error) {
-	rows, err := q.db.Query(ctx, listSurveyRequestsByStatus, status)
+type ListSurveyRequestsByStatusParams struct {
+	Status string
+	Limit  int32
+	Offset int32
+}
+
+func (q *Queries) ListSurveyRequestsByStatus(ctx context.Context, arg ListSurveyRequestsByStatusParams) ([]SurveyRequest, error) {
+	rows, err := q.db.Query(ctx, listSurveyRequestsByStatus, arg.Status, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -150,11 +164,19 @@ func (q *Queries) ListSurveyRequestsByStatus(ctx context.Context, status string)
 const listSurveyRequestsByUserID = `-- name: ListSurveyRequestsByUserID :many
 SELECT id, user_id, title, location, description, status, created_at, updated_at
 FROM survey_requests
-WHERE user_id = $1 ORDER BY created_at DESC
+WHERE user_id = $1 
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3
 `
 
-func (q *Queries) ListSurveyRequestsByUserID(ctx context.Context, userID int64) ([]SurveyRequest, error) {
-	rows, err := q.db.Query(ctx, listSurveyRequestsByUserID, userID)
+type ListSurveyRequestsByUserIDParams struct {
+	UserID int64
+	Limit  int32
+	Offset int32
+}
+
+func (q *Queries) ListSurveyRequestsByUserID(ctx context.Context, arg ListSurveyRequestsByUserIDParams) ([]SurveyRequest, error) {
+	rows, err := q.db.Query(ctx, listSurveyRequestsByUserID, arg.UserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

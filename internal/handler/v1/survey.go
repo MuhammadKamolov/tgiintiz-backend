@@ -61,7 +61,9 @@ func (h *Handler) ListMySurveys(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	surveys, err := h.service.Survey.ListByUserID(r.Context(), claims.UserID)
+	pagination := parsePagination(r)
+
+	surveys, err := h.service.Survey.ListByUserID(r.Context(), claims.UserID, pagination)
 	if err != nil {
 		response.ServiceError(w, r, err)
 		return
@@ -83,11 +85,12 @@ func (h *Handler) ListAllSurveys(w http.ResponseWriter, r *http.Request) {
 	)
 
 	status := r.URL.Query().Get("status")
+	pagination := parsePagination(r)
 
 	if status != "" {
-		survey, err = h.service.Survey.ListByStatus(r.Context(), status)
+		survey, err = h.service.Survey.ListByStatus(r.Context(), status, pagination)
 	} else {
-		survey, err = h.service.Survey.ListAll(r.Context())
+		survey, err = h.service.Survey.ListAll(r.Context(), pagination)
 	}
 	if err != nil {
 		response.ServiceError(w, r, err)

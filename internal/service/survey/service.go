@@ -43,8 +43,8 @@ func (s *Service) GetByID(ctx context.Context, id int64, userID int64) (*models.
 	return survey, nil
 }
 
-func (s *Service) ListByUserID(ctx context.Context, userID int64) ([]*models.SurveyRequest, error) {
-	survey, err := s.survey.ListByUserID(ctx, userID)
+func (s *Service) ListByUserID(ctx context.Context, userID int64, p models.Pagination) ([]*models.SurveyRequest, error) {
+	survey, err := s.survey.ListByUserID(ctx, userID, p.Limit(), p.Offset())
 	if err != nil {
 		return nil, fmt.Errorf("survey service: list by user id: %w", err)
 	}
@@ -52,8 +52,8 @@ func (s *Service) ListByUserID(ctx context.Context, userID int64) ([]*models.Sur
 	return survey, nil
 }
 
-func (s *Service) ListAll(ctx context.Context) ([]*models.SurveyRequest, error) {
-	survey, err := s.survey.ListAll(ctx)
+func (s *Service) ListAll(ctx context.Context, p models.Pagination) ([]*models.SurveyRequest, error) {
+	survey, err := s.survey.ListAll(ctx, p.Limit(), p.Offset())
 	if err != nil {
 		return nil, fmt.Errorf("survey service: list all: %w", err)
 	}
@@ -61,12 +61,12 @@ func (s *Service) ListAll(ctx context.Context) ([]*models.SurveyRequest, error) 
 	return survey, nil
 }
 
-func (s *Service) ListByStatus(ctx context.Context, status string) ([]*models.SurveyRequest, error) {
+func (s *Service) ListByStatus(ctx context.Context, status string, p models.Pagination) ([]*models.SurveyRequest, error) {
 	if !models.SurveyStatus(status).IsValid() {
 		return nil, fmt.Errorf("%w: unknown status %q", models.ErrInvalidInput, status)
 	}
 
-	survey, err := s.survey.ListByStatus(ctx, status)
+	survey, err := s.survey.ListByStatus(ctx, status, p.Limit(), p.Offset())
 	if err != nil {
 		return nil, fmt.Errorf("survey service: list by status: %w", err)
 	}

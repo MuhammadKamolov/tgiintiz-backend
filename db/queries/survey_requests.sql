@@ -6,7 +6,9 @@ RETURNING *;
 -- name: ListSurveyRequestsByUserID :many
 SELECT *
 FROM survey_requests
-WHERE user_id = $1 ORDER BY created_at DESC;
+WHERE user_id = $1 
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3;
 
 -- name: GetSurveyRequestByID :one
 SELECT *
@@ -16,7 +18,8 @@ WHERE id = $1;
 -- name: ListSurveyRequests :many
 SELECT *
 FROM survey_requests
-ORDER BY created_at DESC;
+ORDER BY created_at DESC
+LIMIT $1 OFFSET $2;
 
 -- name: UpdateSurveyRequestStatus :one
 UPDATE survey_requests
@@ -31,4 +34,6 @@ WHERE id = $1;
 -- name: ListSurveyRequestsByStatus :many
 SELECT *
 FROM survey_requests
-WHERE status = $1 ORDER BY created_at DESC;
+WHERE status = $1
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3;

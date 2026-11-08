@@ -30,9 +30,9 @@ type UserService interface {
 type SurveyService interface {
 	Create(ctx context.Context, userID int64, in models.SurveyRequestInput) (*models.SurveyRequest, error)
 	GetByID(ctx context.Context, id int64, userID int64) (*models.SurveyRequest, error)
-	ListByUserID(ctx context.Context, userID int64) ([]*models.SurveyRequest, error)
-	ListAll(ctx context.Context) ([]*models.SurveyRequest, error)
-	ListByStatus(ctx context.Context, status string) ([]*models.SurveyRequest, error)
+	ListByUserID(ctx context.Context, userID int64, p models.Pagination) ([]*models.SurveyRequest, error)
+	ListAll(ctx context.Context, p models.Pagination) ([]*models.SurveyRequest, error)
+	ListByStatus(ctx context.Context, status string, p models.Pagination) ([]*models.SurveyRequest, error)
 	UpdateStatus(ctx context.Context, id int64, status string) (*models.SurveyRequest, error)
 	Delete(ctx context.Context, id int64) error
 }
