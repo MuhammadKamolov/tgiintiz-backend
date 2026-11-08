@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"errors"
 	"net/http"
 	"tgiintiz/internal/handler/middleware"
 	"tgiintiz/internal/handler/response"
@@ -9,7 +10,7 @@ import (
 func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
 	claims := middleware.ClaimsFromContext(r.Context())
 	if claims == nil {
-		response.Error(w, r, http.StatusUnauthorized, "unauthorized", nil)
+		response.Error(w, r, http.StatusUnauthorized, "unauthorized", errors.New("claims not found in context"))
 		return
 	}
 

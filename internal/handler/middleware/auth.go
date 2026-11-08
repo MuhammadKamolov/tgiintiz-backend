@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strings"
 	"tgiintiz/internal/handler/response"
@@ -18,7 +19,7 @@ func Auth(auth service.AuthService) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			tokenStr, ok := strings.CutPrefix(r.Header.Get("Authorization"), "Bearer ")
 			if !ok || tokenStr == "" {
-				response.Error(w, r, http.StatusUnauthorized, "missing or invalid bearer token", nil)
+				response.Error(w, r, http.StatusUnauthorized, "missing or invalid bearer token", errors.New("no bearer token in Authorization header"))
 				return
 			}
 

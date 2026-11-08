@@ -94,3 +94,7 @@ func newTokenPairResponse(tokens *models.TokenPair) tokenPairResponse {
 type refreshTokenRequest struct {
 	RefreshToken string `json:"refresh_token"`
 }
+
+type updateSurveyStatusRequest struct {
+	Status string `json:"status"`
+}

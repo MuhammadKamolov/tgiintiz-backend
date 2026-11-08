@@ -45,6 +45,16 @@ func (q *Queries) CreateSurveyRequest(ctx context.Context, arg CreateSurveyReque
 	return i, err
 }
 
+const deleteSurveyRequest = `-- name: DeleteSurveyRequest :exec
+DELETE FROM survey_requests
+WHERE id = $1
+`
+
+func (q *Queries) DeleteSurveyRequest(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deleteSurveyRequest, id)
+	return err
+}
+
 const getSurveyRequestByID = `-- name: GetSurveyRequestByID :one
 SELECT id, user_id, title, location, description, status, created_at, updated_at
 FROM survey_requests
@@ -65,6 +75,76 @@ func (q *Queries) GetSurveyRequestByID(ctx context.Context, id int64) (SurveyReq
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const listSurveyRequests = `-- name: ListSurveyRequests :many
+SELECT id, user_id, title, location, description, status, created_at, updated_at
+FROM survey_requests
+ORDER BY created_at DESC
+`
+
+func (q *Queries) ListSurveyRequests(ctx context.Context) ([]SurveyRequest, error) {
+	rows, err := q.db.Query(ctx, listSurveyRequests)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []SurveyRequest
+	for rows.Next() {
+		var i SurveyRequest
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Title,
+			&i.Location,
+			&i.Description,
+			&i.Status,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listSurveyRequestsByStatus = `-- name: ListSurveyRequestsByStatus :many
+SELECT id, user_id, title, location, description, status, created_at, updated_at
+FROM survey_requests
+WHERE status = $1 ORDER BY created_at DESC
+`
+
+func (q *Queries) ListSurveyRequestsByStatus(ctx context.Context, status string) ([]SurveyRequest, error) {
+	rows, err := q.db.Query(ctx, listSurveyRequestsByStatus, status)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []SurveyRequest
+	for rows.Next() {
+		var i SurveyRequest
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Title,
+			&i.Location,
+			&i.Description,
+			&i.Status,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listSurveyRequestsByUserID = `-- name: ListSurveyRequestsByUserID :many
@@ -100,4 +180,32 @@ func (q *Queries) ListSurveyRequestsByUserID(ctx context.Context, userID int64) 
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateSurveyRequestStatus = `-- name: UpdateSurveyRequestStatus :one
+UPDATE survey_requests
+SET status = $1, updated_at = NOW()
+WHERE id = $2
+RETURNING id, user_id, title, location, description, status, created_at, updated_at
+`
+
+type UpdateSurveyRequestStatusParams struct {
+	Status string
+	ID     int64
+}
+
+func (q *Queries) UpdateSurveyRequestStatus(ctx context.Context, arg UpdateSurveyRequestStatusParams) (SurveyRequest, error) {
+	row := q.db.QueryRow(ctx, updateSurveyRequestStatus, arg.Status, arg.ID)
+	var i SurveyRequest
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Title,
+		&i.Location,
+		&i.Description,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }

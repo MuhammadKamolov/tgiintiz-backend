@@ -31,6 +31,10 @@ type SurveyService interface {
 	Create(ctx context.Context, userID int64, in models.SurveyRequestInput) (*models.SurveyRequest, error)
 	GetByID(ctx context.Context, id int64, userID int64) (*models.SurveyRequest, error)
 	ListByUserID(ctx context.Context, userID int64) ([]*models.SurveyRequest, error)
+	ListAll(ctx context.Context) ([]*models.SurveyRequest, error)
+	ListByStatus(ctx context.Context, status string) ([]*models.SurveyRequest, error)
+	UpdateStatus(ctx context.Context, id int64, status string) (*models.SurveyRequest, error)
+	Delete(ctx context.Context, id int64) error
 }
 
 func NewServices(repos *repository.Repositories, tokenCfg auth.TokenConfig) *Services {

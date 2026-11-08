@@ -3,6 +3,7 @@ package v1
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"tgiintiz/internal/handler/response"
 )
 
@@ -16,4 +17,8 @@ func decodeJSON(w http.ResponseWriter, r *http.Request, dst any) bool {
 	}
 
 	return true
+}
+
+func parseID(r *http.Request) (int64, error) {
+	return strconv.ParseInt(r.PathValue("id"), 10, 64)
 }

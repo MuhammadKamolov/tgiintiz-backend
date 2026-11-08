@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"errors"
+	"fmt"
 	"tgiintiz/internal/models"
 	"tgiintiz/internal/repository/sqlc"
 
@@ -43,7 +44,7 @@ func (r *repository) Create(ctx context.Context, email string, hashPassword stri
 		if errors.As(err, &pgErr) && pgErr.Code == uniqueViolation {
 			return nil, models.ErrEmailTaken
 		}
-		return nil, err
+		return nil, fmt.Errorf("user repository: create: %w", err)
 	}
 
 	return toModel(user), nil
@@ -55,7 +56,7 @@ func (r *repository) GetByEmail(ctx context.Context, email string) (*models.User
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, models.ErrNotFound
 		}
-		return nil, err
+		return nil, fmt.Errorf("user repository: get by email: %w", err)
 	}
 
 	return toModel(user), nil
@@ -67,7 +68,7 @@ func (r *repository) GetByID(ctx context.Context, id int64) (*models.User, error
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, models.ErrNotFound
 		}
-		return nil, err
+		return nil, fmt.Errorf("user repository: get by id: %w", err)
 	}
 
 	return toModel(user), nil
