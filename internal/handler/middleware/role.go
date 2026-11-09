@@ -4,21 +4,23 @@ import (
 	"errors"
 	"net/http"
 	"tgiintiz/internal/handler/response"
+
+	"github.com/gin-gonic/gin"
 )
 
-func RequireAdmin(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		claims := ClaimsFromContext(r.Context())
+func RequireAdmin() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		claims := ClaimsFromContext(c)
 		if claims == nil {
-			response.Error(w, r, http.StatusUnauthorized, "unauthorized", errors.New("claims not found in context"))
+			response.Error(c, http.StatusUnauthorized, "unauthorized", errors.New("claims not found in context"))
 			return
 		}
 
 		if claims.Role != "admin" {
-			response.Error(w, r, http.StatusForbidden, "forbidden", errors.New("admin role required"))
+			response.Error(c, http.StatusForbidden, "forbidden", errors.New("admin role required"))
 			return
 		}
 
-		next.ServeHTTP(w, r)
-	})
+		c.Next()
+	}
 }

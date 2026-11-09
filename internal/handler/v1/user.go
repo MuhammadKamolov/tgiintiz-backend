@@ -5,23 +5,25 @@ import (
 	"net/http"
 	"tgiintiz/internal/handler/middleware"
 	"tgiintiz/internal/handler/response"
+
+	"github.com/gin-gonic/gin"
 )
 
-func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
-	claims := middleware.ClaimsFromContext(r.Context())
+func (h *Handler) Me(c *gin.Context) {
+	claims := middleware.ClaimsFromContext(c)
 	if claims == nil {
-		response.Error(w, r, http.StatusUnauthorized, "unauthorized", errors.New("claims not found in context"))
+		response.Error(c, http.StatusUnauthorized, "unauthorized", errors.New("claims not found in context"))
 		return
 	}
 
-	user, err := h.service.User.GetByID(r.Context(), claims.UserID)
+	user, err := h.service.User.GetByID(c.Request.Context(), claims.UserID)
 	if err != nil {
-		response.ServiceError(w, r, err)
+		response.ServiceError(c, err)
 		return
 	}
 
 	resp := newUserResponse(user)
 
-	response.JSON(w, http.StatusOK, resp)
+	response.JSON(c, http.StatusOK, resp)
 
 }

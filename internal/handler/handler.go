@@ -5,6 +5,8 @@ import (
 	"tgiintiz/internal/handler/middleware"
 	v1 "tgiintiz/internal/handler/v1"
 	"tgiintiz/internal/service"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {
@@ -18,36 +20,56 @@ func NewHandler(services *service.Services) *Handler {
 }
 
 func (h *Handler) InitRoutes() http.Handler {
+	router := gin.New()
+	router.Use(middleware.Logging(), middleware.Recover())
+	router.Static("/uploads", "./uploads")
+
 	apiV1 := v1.NewHandler(h.services)
 
-	requireAuth := middleware.Auth(h.services.Auth)
-	requireAdmin := func(next http.Handler) http.Handler {
-		return requireAuth(middleware.RequireAdmin(next))
+	authMiddleware := middleware.Auth(h.services.Auth)
+	adminMiddleware := middleware.RequireAdmin()
+
+	api := router.Group("/api/v1")
+	{
+		auth := api.Group("/auth")
+		{
+			auth.POST("/register", apiV1.Register)
+			auth.POST("/login", apiV1.Login)
+			auth.POST("/refresh", apiV1.Refresh)
+			auth.POST("/logout", apiV1.Logout)
+		}
+
+		users := api.Group("/users")
+		users.Use(authMiddleware)
+		{
+			users.GET("/me", apiV1.Me)
+		}
+
+		surveys := api.Group("/surveys")
+		surveys.Use(authMiddleware)
+		{
+			surveys.POST("", apiV1.CreateSurvey)
+			surveys.GET("", apiV1.ListMySurveys)
+			surveys.GET("/:id", apiV1.GetSurveyByID)
+
+			surveys.POST("/:id/attachments", apiV1.UploadAttachment)
+			surveys.GET("/:id/attachments", apiV1.ListAttachments)
+		}
+
+		attachments := api.Group("/attachments")
+		attachments.Use(authMiddleware)
+		{
+			attachments.DELETE("/:id", apiV1.DeleteAttachment)
+		}
+
+		admin := api.Group("/admin/surveys")
+		admin.Use(authMiddleware, adminMiddleware)
+		{
+			admin.GET("", apiV1.ListAllSurveys)
+			admin.PATCH("/:id/status", apiV1.UpdateSurveyStatus)
+			admin.DELETE("/:id", apiV1.DeleteSurvey)
+		}
 	}
 
-	mux := http.NewServeMux()
-
-	mux.HandleFunc("POST /api/v1/auth/register", apiV1.Register)
-	mux.HandleFunc("POST /api/v1/auth/login", apiV1.Login)
-	mux.HandleFunc("POST /api/v1/auth/refresh", apiV1.Refresh)
-	mux.HandleFunc("POST /api/v1/auth/logout", apiV1.Logout)
-
-	mux.Handle("GET /api/v1/users/me", requireAuth(http.HandlerFunc(apiV1.Me)))
-
-	mux.Handle("POST /api/v1/surveys", requireAuth(http.HandlerFunc(apiV1.CreateSurvey)))
-	mux.Handle("GET /api/v1/surveys/{id}", requireAuth(http.HandlerFunc(apiV1.GetSurveyByID)))
-	mux.Handle("GET /api/v1/surveys", requireAuth(http.HandlerFunc(apiV1.ListMySurveys)))
-
-	mux.Handle("GET /api/v1/admin/surveys", requireAdmin(http.HandlerFunc(apiV1.ListAllSurveys)))
-	mux.Handle("PATCH /api/v1/admin/surveys/{id}/status", requireAdmin(http.HandlerFunc(apiV1.UpdateSurveyStatus)))
-	mux.Handle("DELETE /api/v1/admin/surveys/{id}", requireAdmin(http.HandlerFunc(apiV1.DeleteSurvey)))
-
-	mux.Handle("POST /api/v1/surveys/{id}/attachments", requireAuth(http.HandlerFunc(apiV1.UploadAttachment)))
-	mux.Handle("GET /api/v1/surveys/{id}/attachments", requireAuth(http.HandlerFunc(apiV1.ListAttachments)))
-	mux.Handle("DELETE /api/v1/attachments/{id}", requireAuth(http.HandlerFunc(apiV1.DeleteAttachment)))
-
-	fileServer := http.FileServer(http.Dir("./uploads"))
-	mux.Handle("GET /uploads/", http.StripPrefix("/uploads/", fileServer))
-
-	return middleware.Logging(middleware.Recover(mux))
+	return router
 }

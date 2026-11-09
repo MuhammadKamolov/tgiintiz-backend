@@ -1,42 +1,48 @@
 package middleware
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"strings"
 	"tgiintiz/internal/handler/response"
 	"tgiintiz/internal/models"
 	"tgiintiz/internal/service"
+
+	"github.com/gin-gonic/gin"
 )
 
-type contextKey string
+const userCtxKey = "user_claims"
 
-const userCtxKey contextKey = "user_claims"
+func Auth(auth service.AuthService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		tokenStr, ok := strings.CutPrefix(c.GetHeader("Authorization"), "Bearer ")
+		if !ok || tokenStr == "" {
+			response.Error(c, http.StatusUnauthorized, "missing or invalid bearer token", errors.New("no bearer token in Authorization header"))
+			return
+		}
 
-func Auth(auth service.AuthService) func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			tokenStr, ok := strings.CutPrefix(r.Header.Get("Authorization"), "Bearer ")
-			if !ok || tokenStr == "" {
-				response.Error(w, r, http.StatusUnauthorized, "missing or invalid bearer token", errors.New("no bearer token in Authorization header"))
-				return
-			}
+		claims, err := auth.Authenticate(c.Request.Context(), tokenStr)
+		if err != nil {
+			response.Error(c, http.StatusUnauthorized, "invalid or expired token", err)
+			return
+		}
 
-			claims, err := auth.Authenticate(r.Context(), tokenStr)
-			if err != nil {
-				response.Error(w, r, http.StatusUnauthorized, "invalid or expired token", err)
-				return
-			}
+		c.Set(userCtxKey, claims)
 
-			ctx := context.WithValue(r.Context(), userCtxKey, claims)
-
-			next.ServeHTTP(w, r.WithContext(ctx))
-		})
+		c.Next()
 	}
 }
 
-func ClaimsFromContext(ctx context.Context) *models.TokenClaims {
-	claims, _ := ctx.Value(userCtxKey).(*models.TokenClaims)
+func ClaimsFromContext(c *gin.Context) *models.TokenClaims {
+	value, exists := c.Get(userCtxKey)
+	if !exists {
+		return nil
+	}
+
+	claims, ok := value.(*models.TokenClaims)
+	if !ok {
+		return nil
+	}
+
 	return claims
 }

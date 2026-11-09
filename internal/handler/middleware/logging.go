@@ -2,32 +2,22 @@ package middleware
 
 import (
 	"log/slog"
-	"net/http"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
-type statusRecorder struct {
-	http.ResponseWriter
-	status int
-}
-
-func (r *statusRecorder) WriteHeader(status int) {
-	r.status = status
-	r.ResponseWriter.WriteHeader(status)
-}
-
-func Logging(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func Logging() gin.HandlerFunc {
+	return func(c *gin.Context) {
 		start := time.Now()
-		recorder := &statusRecorder{ResponseWriter: w, status: http.StatusOK}
 
-		next.ServeHTTP(recorder, r)
+		c.Next()
 
-		slog.InfoContext(r.Context(), "http request",
-			"method", r.Method,
-			"path", r.URL.Path,
-			"status", recorder.status,
+		slog.InfoContext(c.Request.Context(), "http request",
+			"method", c.Request.Method,
+			"path", c.Request.URL.Path,
+			"status", c.Writer.Status(),
 			"duration", time.Since(start),
 		)
-	})
+	}
 }

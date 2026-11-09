@@ -6,66 +6,68 @@ import (
 	"tgiintiz/internal/handler/middleware"
 	"tgiintiz/internal/handler/response"
 	"tgiintiz/internal/models"
+
+	"github.com/gin-gonic/gin"
 )
 
 const msgInvalidSurveyID = "invalid survey id"
 
-func (h *Handler) CreateSurvey(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CreateSurvey(c *gin.Context) {
 	var req surveyRequest
 
-	if !decodeJSON(w, r, &req) {
+	if !decodeJSON(c, &req) {
 		return
 	}
 
-	claims := middleware.ClaimsFromContext(r.Context())
+	claims := middleware.ClaimsFromContext(c)
 	if claims == nil {
-		response.Error(w, r, http.StatusUnauthorized, "unauthorized", errors.New("claims not found in context"))
+		response.Error(c, http.StatusUnauthorized, "unauthorized", errors.New("claims not found in context"))
 		return
 	}
 
-	survey, err := h.service.Survey.Create(r.Context(), claims.UserID, req.toInput())
+	survey, err := h.service.Survey.Create(c.Request.Context(), claims.UserID, req.toInput())
 	if err != nil {
-		response.ServiceError(w, r, err)
+		response.ServiceError(c, err)
 		return
 	}
 
-	response.JSON(w, http.StatusCreated, newSurveyResponse(survey))
+	response.JSON(c, http.StatusCreated, newSurveyResponse(survey))
 }
 
-func (h *Handler) GetSurveyByID(w http.ResponseWriter, r *http.Request) {
-	id, err := parseID(r)
+func (h *Handler) GetSurveyByID(c *gin.Context) {
+	id, err := parseID(c)
 	if err != nil {
-		response.Error(w, r, http.StatusBadRequest, msgInvalidSurveyID, err)
+		response.Error(c, http.StatusBadRequest, msgInvalidSurveyID, err)
 		return
 	}
 
-	claims := middleware.ClaimsFromContext(r.Context())
+	claims := middleware.ClaimsFromContext(c)
 	if claims == nil {
-		response.Error(w, r, http.StatusUnauthorized, "unauthorized", errors.New("claims not found in context"))
+		response.Error(c, http.StatusUnauthorized, "unauthorized", errors.New("claims not found in context"))
 		return
 	}
 
-	survey, err := h.service.Survey.GetByID(r.Context(), id, claims.UserID)
+	survey, err := h.service.Survey.GetByID(c.Request.Context(), id, claims.UserID)
 	if err != nil {
-		response.ServiceError(w, r, err)
+		response.ServiceError(c, err)
 		return
 	}
 
-	response.JSON(w, http.StatusOK, newSurveyResponse(survey))
+	response.JSON(c, http.StatusOK, newSurveyResponse(survey))
 }
 
-func (h *Handler) ListMySurveys(w http.ResponseWriter, r *http.Request) {
-	claims := middleware.ClaimsFromContext(r.Context())
+func (h *Handler) ListMySurveys(c *gin.Context) {
+	claims := middleware.ClaimsFromContext(c)
 	if claims == nil {
-		response.Error(w, r, http.StatusUnauthorized, "unauthorized", errors.New("claims not found in context"))
+		response.Error(c, http.StatusUnauthorized, "unauthorized", errors.New("claims not found in context"))
 		return
 	}
 
-	pagination := parsePagination(r)
+	pagination := parsePagination(c)
 
-	surveys, err := h.service.Survey.ListByUserID(r.Context(), claims.UserID, pagination)
+	surveys, err := h.service.Survey.ListByUserID(c.Request.Context(), claims.UserID, pagination)
 	if err != nil {
-		response.ServiceError(w, r, err)
+		response.ServiceError(c, err)
 		return
 	}
 
@@ -75,25 +77,25 @@ func (h *Handler) ListMySurveys(w http.ResponseWriter, r *http.Request) {
 		resp = append(resp, newSurveyResponse(s))
 	}
 
-	response.JSON(w, http.StatusOK, resp)
+	response.JSON(c, http.StatusOK, resp)
 }
 
-func (h *Handler) ListAllSurveys(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) ListAllSurveys(c *gin.Context) {
 	var (
 		survey []*models.SurveyRequest
 		err    error
 	)
 
-	status := r.URL.Query().Get("status")
-	pagination := parsePagination(r)
+	status := c.Query("status")
+	pagination := parsePagination(c)
 
 	if status != "" {
-		survey, err = h.service.Survey.ListByStatus(r.Context(), status, pagination)
+		survey, err = h.service.Survey.ListByStatus(c.Request.Context(), status, pagination)
 	} else {
-		survey, err = h.service.Survey.ListAll(r.Context(), pagination)
+		survey, err = h.service.Survey.ListAll(c.Request.Context(), pagination)
 	}
 	if err != nil {
-		response.ServiceError(w, r, err)
+		response.ServiceError(c, err)
 		return
 	}
 
@@ -103,42 +105,42 @@ func (h *Handler) ListAllSurveys(w http.ResponseWriter, r *http.Request) {
 		resp = append(resp, newSurveyResponse(s))
 	}
 
-	response.JSON(w, http.StatusOK, resp)
+	response.JSON(c, http.StatusOK, resp)
 }
 
-func (h *Handler) UpdateSurveyStatus(w http.ResponseWriter, r *http.Request) {
-	id, err := parseID(r)
+func (h *Handler) UpdateSurveyStatus(c *gin.Context) {
+	id, err := parseID(c)
 	if err != nil {
-		response.Error(w, r, http.StatusBadRequest, msgInvalidSurveyID, err)
+		response.Error(c, http.StatusBadRequest, msgInvalidSurveyID, err)
 		return
 	}
 
 	var req updateSurveyStatusRequest
 
-	if !decodeJSON(w, r, &req) {
+	if !decodeJSON(c, &req) {
 		return
 	}
 
-	survey, err := h.service.Survey.UpdateStatus(r.Context(), id, req.Status)
+	survey, err := h.service.Survey.UpdateStatus(c.Request.Context(), id, req.Status)
 	if err != nil {
-		response.ServiceError(w, r, err)
+		response.ServiceError(c, err)
 		return
 	}
 
-	response.JSON(w, http.StatusOK, newSurveyResponse(survey))
+	response.JSON(c, http.StatusOK, newSurveyResponse(survey))
 }
 
-func (h *Handler) DeleteSurvey(w http.ResponseWriter, r *http.Request) {
-	id, err := parseID(r)
+func (h *Handler) DeleteSurvey(c *gin.Context) {
+	id, err := parseID(c)
 	if err != nil {
-		response.Error(w, r, http.StatusBadRequest, msgInvalidSurveyID, err)
+		response.Error(c, http.StatusBadRequest, msgInvalidSurveyID, err)
 		return
 	}
 
-	if err := h.service.Survey.Delete(r.Context(), id); err != nil {
-		response.ServiceError(w, r, err)
+	if err := h.service.Survey.Delete(c.Request.Context(), id); err != nil {
+		response.ServiceError(c, err)
 		return
 	}
 
-	response.JSON(w, http.StatusOK, nil)
+	response.JSON(c, http.StatusOK, nil)
 }

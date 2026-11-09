@@ -1,59 +1,55 @@
 package response
 
 import (
-	"encoding/json"
 	"errors"
 	"log/slog"
 	"net/http"
 	"tgiintiz/internal/models"
+
+	"github.com/gin-gonic/gin"
 )
 
 type errorBody struct {
 	Error string `json:"error"`
 }
 
-func JSON(w http.ResponseWriter, status int, body any) {
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.WriteHeader(status)
-
-	if body != nil {
-		_ = json.NewEncoder(w).Encode(body)
-	}
+func JSON(c *gin.Context, status int, body any) {
+	c.JSON(status, body)
 }
 
-func Error(w http.ResponseWriter, r *http.Request, status int, message string, cause error) {
+func Error(c *gin.Context, status int, message string, cause error) {
 	level := slog.LevelWarn
 
 	if status >= http.StatusInternalServerError {
 		level = slog.LevelError
 	}
 
-	slog.Log(r.Context(), level, "request failed",
-		"method", r.Method,
-		"path", r.URL.Path,
+	slog.Log(c.Request.Context(), level, "request failed",
+		"method", c.Request.Method,
+		"path", c.Request.URL.Path,
 		"status", status,
 		"error", cause,
 	)
 
-	JSON(w, status, errorBody{Error: message})
+	c.AbortWithStatusJSON(status, errorBody{Error: message})
 }
 
-func ServiceError(w http.ResponseWriter, r *http.Request, err error) {
+func ServiceError(c *gin.Context, err error) {
 	switch {
 	case errors.Is(err, models.ErrInvalidInput):
-		Error(w, r, http.StatusBadRequest, err.Error(), err)
+		Error(c, http.StatusBadRequest, err.Error(), err)
 	case errors.Is(err, models.ErrInvalidCredentials):
-		Error(w, r, http.StatusUnauthorized, models.ErrInvalidCredentials.Error(), err)
+		Error(c, http.StatusUnauthorized, models.ErrInvalidCredentials.Error(), err)
 	case errors.Is(err, models.ErrEmailTaken):
-		Error(w, r, http.StatusConflict, models.ErrEmailTaken.Error(), err)
+		Error(c, http.StatusConflict, models.ErrEmailTaken.Error(), err)
 	case errors.Is(err, models.ErrNotFound):
-		Error(w, r, http.StatusNotFound, models.ErrNotFound.Error(), err)
+		Error(c, http.StatusNotFound, models.ErrNotFound.Error(), err)
 	case errors.Is(err, models.ErrInvalidToken):
-		Error(w, r, http.StatusUnauthorized, models.ErrInvalidToken.Error(), err)
+		Error(c, http.StatusUnauthorized, models.ErrInvalidToken.Error(), err)
 	case errors.Is(err, models.ErrForbidden):
-		Error(w, r, http.StatusForbidden, models.ErrForbidden.Error(), err)
+		Error(c, http.StatusForbidden, models.ErrForbidden.Error(), err)
 
 	default:
-		Error(w, r, http.StatusInternalServerError, "internal server error", err)
+		Error(c, http.StatusInternalServerError, "internal server error", err)
 	}
 }

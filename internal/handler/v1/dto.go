@@ -6,8 +6,8 @@ import (
 )
 
 type registerRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required,min=8,max=72"`
 }
 
 func (req registerRequest) toInput() models.RegisterInput {
@@ -18,8 +18,8 @@ func (req registerRequest) toInput() models.RegisterInput {
 }
 
 type loginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required"`
 }
 
 func (req loginRequest) toInput() models.LoginInput {
@@ -30,8 +30,8 @@ func (req loginRequest) toInput() models.LoginInput {
 }
 
 type surveyRequest struct {
-	Title       string `json:"title"`
-	Location    string `json:"location"`
+	Title       string `json:"title" binding:"required,min=3,max=255"`
+	Location    string `json:"location" binding:"omitempty,max=255"`
 	Description string `json:"description"`
 }
 
@@ -41,6 +41,13 @@ func (req surveyRequest) toInput() models.SurveyRequestInput {
 		Location:    req.Location,
 		Description: req.Description,
 	}
+}
+
+type refreshTokenRequest struct {
+	RefreshToken string `json:"refresh_token" binding:"required"`
+}
+type updateSurveyStatusRequest struct {
+	Status string `json:"status" binding:"required,oneof=pending in_progress approved rejected"`
 }
 
 type userResponse struct {
@@ -89,12 +96,4 @@ func newTokenPairResponse(tokens *models.TokenPair) tokenPairResponse {
 		AccessToken:  tokens.AccessToken,
 		RefreshToken: tokens.RefreshToken,
 	}
-}
-
-type refreshTokenRequest struct {
-	RefreshToken string `json:"refresh_token"`
-}
-
-type updateSurveyStatusRequest struct {
-	Status string `json:"status"`
 }

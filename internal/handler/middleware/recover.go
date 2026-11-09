@@ -5,16 +5,18 @@ import (
 	"net/http"
 	"runtime/debug"
 	"tgiintiz/internal/handler/response"
+
+	"github.com/gin-gonic/gin"
 )
 
-func Recover(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func Recover() gin.HandlerFunc {
+	return func(c *gin.Context) {
 		defer func() {
 			if p := recover(); p != nil {
 				err := fmt.Errorf("panic: %v\n%s", p, debug.Stack())
-				response.Error(w, r, http.StatusInternalServerError, "internal server error", err)
+				response.Error(c, http.StatusInternalServerError, "internal server error", err)
 			}
 		}()
-		next.ServeHTTP(w, r)
-	})
+		c.Next()
+	}
 }

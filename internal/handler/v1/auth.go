@@ -3,67 +3,69 @@ package v1
 import (
 	"net/http"
 	"tgiintiz/internal/handler/response"
+
+	"github.com/gin-gonic/gin"
 )
 
-func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Register(c *gin.Context) {
 	var req registerRequest
 
-	if !decodeJSON(w, r, &req) {
+	if !decodeJSON(c, &req) {
 		return
 	}
 
-	user, err := h.service.Auth.Register(r.Context(), req.toInput())
+	user, err := h.service.Auth.Register(c.Request.Context(), req.toInput())
 	if err != nil {
-		response.ServiceError(w, r, err)
+		response.ServiceError(c, err)
 		return
 	}
 
-	response.JSON(w, http.StatusCreated, newUserResponse(user))
+	response.JSON(c, http.StatusCreated, newUserResponse(user))
 }
 
-func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Login(c *gin.Context) {
 	var req loginRequest
 
-	if !decodeJSON(w, r, &req) {
+	if !decodeJSON(c, &req) {
 		return
 	}
 
-	tokens, err := h.service.Auth.Login(r.Context(), req.toInput())
+	tokens, err := h.service.Auth.Login(c.Request.Context(), req.toInput())
 	if err != nil {
-		response.ServiceError(w, r, err)
+		response.ServiceError(c, err)
 		return
 	}
 
-	response.JSON(w, http.StatusOK, newTokenPairResponse(tokens))
+	response.JSON(c, http.StatusOK, newTokenPairResponse(tokens))
 }
 
-func (h *Handler) Refresh(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Refresh(c *gin.Context) {
 	var req refreshTokenRequest
 
-	if !decodeJSON(w, r, &req) {
+	if !decodeJSON(c, &req) {
 		return
 	}
 
-	tokens, err := h.service.Auth.Refresh(r.Context(), req.RefreshToken)
+	tokens, err := h.service.Auth.Refresh(c.Request.Context(), req.RefreshToken)
 	if err != nil {
-		response.ServiceError(w, r, err)
+		response.ServiceError(c, err)
 		return
 	}
 
-	response.JSON(w, http.StatusOK, newTokenPairResponse(tokens))
+	response.JSON(c, http.StatusOK, newTokenPairResponse(tokens))
 }
 
-func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Logout(c *gin.Context) {
 	var req refreshTokenRequest
 
-	if !decodeJSON(w, r, &req) {
+	if !decodeJSON(c, &req) {
 		return
 	}
 
-	if err := h.service.Auth.Logout(r.Context(), req.RefreshToken); err != nil {
-		response.ServiceError(w, r, err)
+	if err := h.service.Auth.Logout(c.Request.Context(), req.RefreshToken); err != nil {
+		response.ServiceError(c, err)
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	c.Status(http.StatusNoContent)
 }
