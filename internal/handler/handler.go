@@ -42,5 +42,12 @@ func (h *Handler) InitRoutes() http.Handler {
 	mux.Handle("PATCH /api/v1/admin/surveys/{id}/status", requireAdmin(http.HandlerFunc(apiV1.UpdateSurveyStatus)))
 	mux.Handle("DELETE /api/v1/admin/surveys/{id}", requireAdmin(http.HandlerFunc(apiV1.DeleteSurvey)))
 
+	mux.Handle("POST /api/v1/surveys/{id}/attachments", requireAuth(http.HandlerFunc(apiV1.UploadAttachment)))
+	mux.Handle("GET /api/v1/surveys/{id}/attachments", requireAuth(http.HandlerFunc(apiV1.ListAttachments)))
+	mux.Handle("DELETE /api/v1/attachments/{id}", requireAuth(http.HandlerFunc(apiV1.DeleteAttachment)))
+
+	fileServer := http.FileServer(http.Dir("./uploads"))
+	mux.Handle("GET /uploads/", http.StripPrefix("/uploads/", fileServer))
+
 	return middleware.Logging(middleware.Recover(mux))
 }

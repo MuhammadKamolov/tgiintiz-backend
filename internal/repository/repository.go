@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"tgiintiz/internal/models"
+	attachmentRepo "tgiintiz/internal/repository/attachment"
 	"tgiintiz/internal/repository/sqlc"
 	surveyRepo "tgiintiz/internal/repository/survey"
 	userRepo "tgiintiz/internal/repository/user"
@@ -13,9 +14,10 @@ import (
 )
 
 type Repositories struct {
-	User    UserRepository
-	Survey  SurveyRepository
-	Session SessionRepository
+	User       UserRepository
+	Survey     SurveyRepository
+	Attachment AttachmentRepository
+	Session    SessionRepository
 }
 
 type UserRepository interface {
@@ -31,7 +33,7 @@ type SessionRepository interface {
 }
 
 type SurveyRepository interface {
-	Create(ctx context.Context, userID int64, title string, location string, description string) (*models.SurveyRequest, error)
+	Create(ctx context.Context, userID int64, input models.SurveyRequestInput) (*models.SurveyRequest, error)
 	GetByID(ctx context.Context, id int64) (*models.SurveyRequest, error)
 	ListByUserID(ctx context.Context, userID int64, limit, offset int32) ([]*models.SurveyRequest, error)
 	ListAll(ctx context.Context, limit, ofset int32) ([]*models.SurveyRequest, error)
@@ -40,12 +42,20 @@ type SurveyRepository interface {
 	Delete(ctx context.Context, id int64) error
 }
 
+type AttachmentRepository interface {
+	Create(ctx context.Context, att *models.RequestAttachment) (*models.RequestAttachment, error)
+	ListByRequestID(ctx context.Context, requestID int64) ([]*models.RequestAttachment, error)
+	GetByID(ctx context.Context, id int64) (*models.RequestAttachment, error)
+	Delete(ctx context.Context, id int64) error
+}
+
 func NewRepositories(pool *pgxpool.Pool, redisClient *redis.Client) *Repositories {
 	q := sqlc.New(pool)
 
 	return &Repositories{
-		User:    userRepo.New(q),
-		Survey:  surveyRepo.New(q),
-		Session: NewSessionRepository(redisClient),
+		User:       userRepo.New(q),
+		Survey:     surveyRepo.New(q),
+		Attachment: attachmentRepo.New(q),
+		Session:    NewSessionRepository(redisClient),
 	}
 }

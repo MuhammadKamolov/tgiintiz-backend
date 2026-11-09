@@ -17,6 +17,7 @@ import (
 	"tgiintiz/pkg/logger"
 	"tgiintiz/pkg/postgres"
 	"tgiintiz/pkg/redis"
+	"tgiintiz/pkg/storage"
 	"time"
 )
 
@@ -69,11 +70,17 @@ func Run() error {
 	}()
 
 	repos := repository.NewRepositories(pool, redisClient)
+
+	storage, err := storage.NewLocalStorage("./uploads")
+	if err != nil {
+		return fmt.Errorf("init storage: %w", err)
+	}
+
 	service := service.NewServices(repos, auth.TokenConfig{
 		Secret:     cfg.JWT.Secret,
 		AccessTTL:  cfg.JWT.AccessTTL,
 		RefreshTTL: cfg.JWT.RefreshTTL,
-	})
+	}, storage)
 
 	handlers := handler.NewHandler(service)
 

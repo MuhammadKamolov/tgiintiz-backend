@@ -34,12 +34,12 @@ func toModel(s sqlc.SurveyRequest) *models.SurveyRequest {
 	}
 }
 
-func (r *repository) Create(ctx context.Context, userID int64, title string, location string, description string) (*models.SurveyRequest, error) {
+func (r *repository) Create(ctx context.Context, userID int64, input models.SurveyRequestInput) (*models.SurveyRequest, error) {
 	args := sqlc.CreateSurveyRequestParams{
 		UserID:      userID,
-		Title:       title,
-		Location:    pgtype.Text{String: location, Valid: location != ""},
-		Description: pgtype.Text{String: description, Valid: description != ""},
+		Title:       input.Title,
+		Location:    pgtype.Text{String: input.Location, Valid: input.Location != ""},
+		Description: pgtype.Text{String: input.Description, Valid: input.Description != ""},
 	}
 
 	row, err := r.q.CreateSurveyRequest(ctx, args)

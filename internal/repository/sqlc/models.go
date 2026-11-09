@@ -8,6 +8,15 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type RequestAttachment struct {
+	ID        int64
+	RequestID int64
+	FileName  string
+	FileUrl   string
+	FileSize  int64
+	CreatedAt pgtype.Timestamptz
+}
+
 type SurveyRequest struct {
 	ID          int64
 	UserID      int64
