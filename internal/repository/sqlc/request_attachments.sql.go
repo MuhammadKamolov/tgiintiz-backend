@@ -52,7 +52,8 @@ func (q *Queries) DeleteRequestAttachment(ctx context.Context, id int64) error {
 }
 
 const getAttachmentByID = `-- name: GetAttachmentByID :one
-SELECT id, request_id, file_name, file_url, file_size, created_at FROM request_attachments
+SELECT id, request_id, file_name, file_url, file_size, created_at
+FROM request_attachments
 WHERE id = $1
 `
 
@@ -71,7 +72,8 @@ func (q *Queries) GetAttachmentByID(ctx context.Context, id int64) (RequestAttac
 }
 
 const listAttachmentsByRequestID = `-- name: ListAttachmentsByRequestID :many
-SELECT id, request_id, file_name, file_url, file_size, created_at FROM request_attachments
+SELECT id, request_id, file_name, file_url, file_size, created_at
+FROM request_attachments
 WHERE request_id = $1
 ORDER BY created_at ASC
 `

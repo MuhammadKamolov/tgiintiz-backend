@@ -12,7 +12,12 @@ import (
 const createUser = `-- name: CreateUser :one
 INSERT INTO users(email, password_hash, role)
 VALUES ($1, $2, $3)
-RETURNING id, email, password_hash, role, created_at
+RETURNING
+    id,
+    email,
+    password_hash,
+    role,
+    created_at
 `
 
 type CreateUserParams struct {
@@ -35,7 +40,12 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 }
 
 const getByID = `-- name: GetByID :one
-SELECT id, email, password_hash, role, created_at
+SELECT
+    id,
+    email,
+    password_hash,
+    role,
+    created_at
 FROM users
 WHERE id = $1
 `
@@ -54,7 +64,12 @@ func (q *Queries) GetByID(ctx context.Context, id int64) (User, error) {
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, password_hash, role, created_at
+SELECT
+    id,
+    email,
+    password_hash,
+    role,
+    created_at
 FROM users
 WHERE email = $1
 `

@@ -17,6 +17,25 @@ type RequestAttachment struct {
 	CreatedAt pgtype.Timestamptz
 }
 
+type RequestService struct {
+	RequestID int64
+	ServiceID int64
+}
+
+type Service struct {
+	ID        int64
+	Lang      string
+	Slug      string
+	Title     string
+	ShortDesc string
+	FullDesc  pgtype.Text
+	ImageUrl  pgtype.Text
+	Standards []byte
+	Equipment []byte
+	IsActive  bool
+	CreatedAt pgtype.Timestamptz
+}
+
 type SurveyRequest struct {
 	ID          int64
 	UserID      int64

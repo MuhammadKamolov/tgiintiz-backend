@@ -14,7 +14,15 @@ import (
 const createSurveyRequest = `-- name: CreateSurveyRequest :one
 INSERT INTO survey_requests(user_id, title, location, description)
 VALUES ($1, $2, $3, $4)
-RETURNING id, user_id, title, location, description, status, created_at, updated_at
+RETURNING
+    id,
+    user_id,
+    title,
+    location,
+    description,
+    status,
+    created_at,
+    updated_at
 `
 
 type CreateSurveyRequestParams struct {
@@ -56,7 +64,15 @@ func (q *Queries) DeleteSurveyRequest(ctx context.Context, id int64) error {
 }
 
 const getSurveyRequestByID = `-- name: GetSurveyRequestByID :one
-SELECT id, user_id, title, location, description, status, created_at, updated_at
+SELECT
+    id,
+    user_id,
+    title,
+    location,
+    description,
+    status,
+    created_at,
+    updated_at
 FROM survey_requests
 WHERE id = $1
 `
@@ -78,7 +94,15 @@ func (q *Queries) GetSurveyRequestByID(ctx context.Context, id int64) (SurveyReq
 }
 
 const listSurveyRequests = `-- name: ListSurveyRequests :many
-SELECT id, user_id, title, location, description, status, created_at, updated_at
+SELECT
+    id,
+    user_id,
+    title,
+    location,
+    description,
+    status,
+    created_at,
+    updated_at
 FROM survey_requests
 ORDER BY created_at DESC
 LIMIT $1 OFFSET $2
@@ -119,7 +143,15 @@ func (q *Queries) ListSurveyRequests(ctx context.Context, arg ListSurveyRequests
 }
 
 const listSurveyRequestsByStatus = `-- name: ListSurveyRequestsByStatus :many
-SELECT id, user_id, title, location, description, status, created_at, updated_at
+SELECT
+    id,
+    user_id,
+    title,
+    location,
+    description,
+    status,
+    created_at,
+    updated_at
 FROM survey_requests
 WHERE status = $1
 ORDER BY created_at DESC
@@ -162,7 +194,15 @@ func (q *Queries) ListSurveyRequestsByStatus(ctx context.Context, arg ListSurvey
 }
 
 const listSurveyRequestsByUserID = `-- name: ListSurveyRequestsByUserID :many
-SELECT id, user_id, title, location, description, status, created_at, updated_at
+SELECT
+    id,
+    user_id,
+    title,
+    location,
+    description,
+    status,
+    created_at,
+    updated_at
 FROM survey_requests
 WHERE user_id = $1 
 ORDER BY created_at DESC
@@ -208,7 +248,15 @@ const updateSurveyRequestStatus = `-- name: UpdateSurveyRequestStatus :one
 UPDATE survey_requests
 SET status = $1, updated_at = NOW()
 WHERE id = $2
-RETURNING id, user_id, title, location, description, status, created_at, updated_at
+RETURNING 
+    id,
+    user_id,
+    title,
+    location,
+    description,
+    status,
+    created_at,
+    updated_at
 `
 
 type UpdateSurveyRequestStatusParams struct {
