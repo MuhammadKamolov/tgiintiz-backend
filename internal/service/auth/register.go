@@ -27,7 +27,7 @@ func (s *Service) Register(ctx context.Context, in models.RegisterInput) (*model
 		return nil, fmt.Errorf("hash password: %w", err)
 	}
 
-	user, err := s.users.Create(ctx, in.Email, string(hash))
+	user, err := s.userRepo.Create(ctx, in.Email, string(hash))
 	if err != nil {
 		return nil, err
 	}

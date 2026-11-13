@@ -34,12 +34,12 @@ func toModel(s sqlc.SurveyRequest) *models.SurveyRequest {
 	}
 }
 
-func (r *repository) Create(ctx context.Context, userID int64, input models.SurveyRequestInput) (*models.SurveyRequest, error) {
+func (r *repository) Create(ctx context.Context, userID int64, in models.SurveyRequestInput) (*models.SurveyRequest, error) {
 	args := sqlc.CreateSurveyRequestParams{
 		UserID:      userID,
-		Title:       input.Title,
-		Location:    pgtype.Text{String: input.Location, Valid: input.Location != ""},
-		Description: pgtype.Text{String: input.Description, Valid: input.Description != ""},
+		Title:       in.Title,
+		Location:    pgtype.Text{String: in.Location, Valid: in.Location != ""},
+		Description: pgtype.Text{String: in.Description, Valid: in.Description != ""},
 	}
 
 	row, err := r.q.CreateSurveyRequest(ctx, args)
@@ -50,8 +50,8 @@ func (r *repository) Create(ctx context.Context, userID int64, input models.Surv
 	return toModel(row), nil
 }
 
-func (r *repository) GetByID(ctx context.Context, id int64) (*models.SurveyRequest, error) {
-	row, err := r.q.GetSurveyRequestByID(ctx, id)
+func (r *repository) GetByID(ctx context.Context, requestID int64) (*models.SurveyRequest, error) {
+	row, err := r.q.GetSurveyRequestByID(ctx, requestID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, models.ErrNotFound
@@ -115,9 +115,9 @@ func (r *repository) ListByStatus(ctx context.Context, status string, limit, ofs
 	return survey, nil
 }
 
-func (r *repository) UpdateStatus(ctx context.Context, id int64, status string) (*models.SurveyRequest, error) {
+func (r *repository) UpdateStatus(ctx context.Context, requestID int64, status string) (*models.SurveyRequest, error) {
 	args := sqlc.UpdateSurveyRequestStatusParams{
-		ID:     id,
+		ID:     requestID,
 		Status: status,
 	}
 
@@ -132,8 +132,8 @@ func (r *repository) UpdateStatus(ctx context.Context, id int64, status string) 
 	return toModel(survey), nil
 }
 
-func (r *repository) Delete(ctx context.Context, id int64) error {
-	if err := r.q.DeleteSurveyRequest(ctx, id); err != nil {
+func (r *repository) Delete(ctx context.Context, requestID int64) error {
+	if err := r.q.DeleteSurveyRequest(ctx, requestID); err != nil {
 		return fmt.Errorf("survey repository: delete: %w", err)
 	}
 

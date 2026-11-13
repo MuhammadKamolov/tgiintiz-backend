@@ -18,7 +18,7 @@ SELECT
 FROM users
 WHERE email = $1;
 
--- name: GetByID :one
+-- name: GetUserByID :one
 SELECT
     id,
     email,

@@ -50,15 +50,15 @@ type updateSurveyStatusRequest struct {
 	Status string `json:"status" binding:"required,oneof=pending in_progress approved rejected"`
 }
 
-type userResponse struct {
+type registerResponse struct {
 	ID        int64     `json:"id"`
 	Email     string    `json:"email"`
 	Role      string    `json:"role"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
-func newUserResponse(u *models.User) userResponse {
-	return userResponse{
+func newRegisterResponse(u *models.User) registerResponse {
+	return registerResponse{
 		ID:        u.ID,
 		Email:     u.Email,
 		Role:      u.Role,

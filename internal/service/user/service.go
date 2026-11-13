@@ -8,15 +8,15 @@ import (
 )
 
 type Service struct {
-	user repository.UserRepository
+	userRepo repository.UserRepository
 }
 
-func New(user repository.UserRepository) *Service {
-	return &Service{user: user}
+func New(userRepo repository.UserRepository) *Service {
+	return &Service{userRepo: userRepo}
 }
 
 func (s *Service) GetByID(ctx context.Context, id int64) (*models.User, error) {
-	user, err := s.user.GetByID(ctx, id)
+	user, err := s.userRepo.GetByID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("user service: get by id: %w", err)
 	}

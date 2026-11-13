@@ -24,7 +24,7 @@ type tokenClaims struct {
 
 func (s *Service) newTokenPair(ctx context.Context, u *models.User) (*models.TokenPair, error) {
 	sessionID := rand.Text()
-	if err := s.session.Create(ctx, sessionID, u.ID, s.refreshTTL); err != nil {
+	if err := s.sessionRepo.Create(ctx, sessionID, u.ID, s.refreshTTL); err != nil {
 		return nil, fmt.Errorf("create session: %w", err)
 	}
 

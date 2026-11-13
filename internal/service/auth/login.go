@@ -10,7 +10,7 @@ import (
 )
 
 func (s *Service) Login(ctx context.Context, in models.LoginInput) (*models.TokenPair, error) {
-	user, err := s.users.GetByEmail(ctx, normalizeEmail(in.Email))
+	user, err := s.userRepo.GetByEmail(ctx, normalizeEmail(in.Email))
 	if err != nil {
 		if errors.Is(err, models.ErrNotFound) {
 			return nil, models.ErrInvalidCredentials

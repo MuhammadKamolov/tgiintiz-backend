@@ -17,7 +17,7 @@ func (s *Service) Authenticate(ctx context.Context, token string) (*models.Token
 		return nil, err
 	}
 
-	active, err := s.session.Exists(ctx, claims.ID)
+	active, err := s.sessionRepo.Exists(ctx, claims.ID)
 	if err != nil {
 		return nil, fmt.Errorf("check session: %w", err)
 	}

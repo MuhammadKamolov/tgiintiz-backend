@@ -12,11 +12,11 @@ type TokenConfig struct {
 }
 
 type Service struct {
-	users      repository.UserRepository
-	session    repository.SessionRepository
-	jwtSecret  []byte
-	accessTTL  time.Duration
-	refreshTTL time.Duration
+	userRepo    repository.UserRepository
+	sessionRepo repository.SessionRepository
+	jwtSecret   []byte
+	accessTTL   time.Duration
+	refreshTTL  time.Duration
 }
 
 func New(
@@ -25,10 +25,10 @@ func New(
 	tokens TokenConfig,
 ) *Service {
 	return &Service{
-		users:      users,
-		session:    session,
-		jwtSecret:  []byte(tokens.Secret),
-		accessTTL:  tokens.AccessTTL,
-		refreshTTL: tokens.RefreshTTL,
+		userRepo:    users,
+		sessionRepo: session,
+		jwtSecret:   []byte(tokens.Secret),
+		accessTTL:   tokens.AccessTTL,
+		refreshTTL:  tokens.RefreshTTL,
 	}
 }

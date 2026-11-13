@@ -13,7 +13,7 @@ func (s *Service) Logout(ctx context.Context, refreshToken string) error {
 		return err
 	}
 
-	if err := s.session.Delete(ctx, claims.ID); err != nil && !errors.Is(err, models.ErrNotFound) {
+	if err := s.sessionRepo.Delete(ctx, claims.ID); err != nil && !errors.Is(err, models.ErrNotFound) {
 		return fmt.Errorf("delete session: %w", err)
 	}
 	return nil

@@ -106,18 +106,7 @@ func (q *Queries) DeleteService(ctx context.Context, id int64) error {
 }
 
 const getServiceByID = `-- name: GetServiceByID :one
-SELECT
-    id,
-    lang,
-    slug,
-    title,
-    short_desc,
-    full_desc,
-    image_url,
-    standards,
-    equipment,
-    is_active,
-    created_at
+SELECT id, lang, slug, title, short_desc, full_desc, image_url, standards, equipment, is_active, created_at
 FROM services
 WHERE id = $1
 `
@@ -142,17 +131,7 @@ func (q *Queries) GetServiceByID(ctx context.Context, id int64) (Service, error)
 }
 
 const getServiceBySlugAndLang = `-- name: GetServiceBySlugAndLang :one
-SELECT 
-    id,
-    lang,
-    slug,
-    title,
-    short_desc,
-    image_url,
-    standards,
-    equipment,
-    is_active,
-    created_at
+SELECT id, lang, slug, title, short_desc, full_desc, image_url, standards, equipment, is_active, created_at
 FROM services
 WHERE slug = $1 AND lang = $2
 `
@@ -162,28 +141,16 @@ type GetServiceBySlugAndLangParams struct {
 	Lang string
 }
 
-type GetServiceBySlugAndLangRow struct {
-	ID        int64
-	Lang      string
-	Slug      string
-	Title     string
-	ShortDesc string
-	ImageUrl  pgtype.Text
-	Standards []byte
-	Equipment []byte
-	IsActive  bool
-	CreatedAt pgtype.Timestamptz
-}
-
-func (q *Queries) GetServiceBySlugAndLang(ctx context.Context, arg GetServiceBySlugAndLangParams) (GetServiceBySlugAndLangRow, error) {
+func (q *Queries) GetServiceBySlugAndLang(ctx context.Context, arg GetServiceBySlugAndLangParams) (Service, error) {
 	row := q.db.QueryRow(ctx, getServiceBySlugAndLang, arg.Slug, arg.Lang)
-	var i GetServiceBySlugAndLangRow
+	var i Service
 	err := row.Scan(
 		&i.ID,
 		&i.Lang,
 		&i.Slug,
 		&i.Title,
 		&i.ShortDesc,
+		&i.FullDesc,
 		&i.ImageUrl,
 		&i.Standards,
 		&i.Equipment,
@@ -252,7 +219,8 @@ SELECT
     s.slug,
     s.title,
     s.short_desc,
-    s.image_url
+    s.image_url,
+    s.created_at
 FROM services s
 JOIN request_services rs ON rs.service_id = s.id
 WHERE rs.request_id = $1
@@ -266,6 +234,7 @@ type ListServicesByRequestIDRow struct {
 	Title     string
 	ShortDesc string
 	ImageUrl  pgtype.Text
+	CreatedAt pgtype.Timestamptz
 }
 
 func (q *Queries) ListServicesByRequestID(ctx context.Context, requestID int64) ([]ListServicesByRequestIDRow, error) {
@@ -284,6 +253,7 @@ func (q *Queries) ListServicesByRequestID(ctx context.Context, requestID int64) 
 			&i.Title,
 			&i.ShortDesc,
 			&i.ImageUrl,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}

@@ -40,7 +40,7 @@ func (h *Handler) UploadAttachment(c *gin.Context) {
 	}
 	defer file.Close()
 
-	input := models.UploadAttachmentInput{
+	in := models.UploadAttachmentInput{
 		UserID:    claims.UserID,
 		UserRole:  claims.Role,
 		RequestID: requestID,
@@ -49,7 +49,7 @@ func (h *Handler) UploadAttachment(c *gin.Context) {
 		Content:   file,
 	}
 
-	att, err := h.service.Survey.UploadAttachment(c.Request.Context(), input)
+	att, err := h.service.Survey.UploadAttachment(c.Request.Context(), in)
 	if err != nil {
 		response.ServiceError(c, err)
 		return
@@ -71,7 +71,7 @@ func (h *Handler) ListAttachments(c *gin.Context) {
 		return
 	}
 
-	attachments, err := h.service.Survey.ListAttachments(c.Request.Context(), requestID, claims.UserID, claims.Role)
+	attachments, err := h.service.Survey.ListAttachments(c.Request.Context(), requestID, *claims)
 	if err != nil {
 		response.ServiceError(c, err)
 		return
@@ -93,7 +93,7 @@ func (h *Handler) DeleteAttachment(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.Survey.DeleteAttachment(c.Request.Context(), attachmentID, claims.UserID, claims.Role); err != nil {
+	if err := h.service.Survey.DeleteAttachment(c.Request.Context(), attachmentID, *claims); err != nil {
 		response.ServiceError(c, err)
 		return
 	}

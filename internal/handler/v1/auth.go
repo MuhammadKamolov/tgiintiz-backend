@@ -20,7 +20,7 @@ func (h *Handler) Register(c *gin.Context) {
 		return
 	}
 
-	response.JSON(c, http.StatusCreated, newUserResponse(user))
+	response.JSON(c, http.StatusCreated, newRegisterResponse(user))
 }
 
 func (h *Handler) Login(c *gin.Context) {

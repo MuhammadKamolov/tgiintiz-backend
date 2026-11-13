@@ -18,7 +18,7 @@ func (s *Service) Refresh(ctx context.Context, refreshToken string) (*models.Tok
 		return nil, err
 	}
 
-	active, err := s.session.Exists(ctx, claims.ID)
+	active, err := s.sessionRepo.Exists(ctx, claims.ID)
 	if err != nil {
 		return nil, fmt.Errorf("exists session: %w", err)
 	}
@@ -27,14 +27,14 @@ func (s *Service) Refresh(ctx context.Context, refreshToken string) (*models.Tok
 		return nil, fmt.Errorf("%w: session revoked", models.ErrInvalidToken)
 	}
 
-	if err := s.session.Delete(ctx, claims.ID); err != nil {
+	if err := s.sessionRepo.Delete(ctx, claims.ID); err != nil {
 		if errors.Is(err, models.ErrNotFound) {
 			return nil, models.ErrInvalidToken
 		}
 		return nil, fmt.Errorf("delete session: %w", err)
 	}
 
-	user, err := s.users.GetByID(ctx, userID)
+	user, err := s.userRepo.GetByID(ctx, userID)
 	if err != nil {
 		if errors.Is(err, models.ErrNotFound) {
 			return nil, models.ErrInvalidToken

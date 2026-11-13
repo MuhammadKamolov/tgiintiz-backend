@@ -1,44 +1,10 @@
--- name: ListServicesByLang :many
-SELECT
-    id,
-    lang,
-    slug,
-    title,
-    short_desc,
-    image_url,
-    created_at    
-FROM services
-WHERE is_active = true AND lang = $1
-ORDER BY created_at DESC;
-
 -- name: GetServiceBySlugAndLang :one
-SELECT 
-    id,
-    lang,
-    slug,
-    title,
-    short_desc,
-    image_url,
-    standards,
-    equipment,
-    is_active,
-    created_at
+SELECT *
 FROM services
 WHERE slug = $1 AND lang = $2;
 
 -- name: GetServiceByID :one
-SELECT
-    id,
-    lang,
-    slug,
-    title,
-    short_desc,
-    full_desc,
-    image_url,
-    standards,
-    equipment,
-    is_active,
-    created_at
+SELECT *
 FROM services
 WHERE id = $1;
 
@@ -108,11 +74,25 @@ SELECT
     s.slug,
     s.title,
     s.short_desc,
-    s.image_url
+    s.image_url,
+    s.created_at
 FROM services s
 JOIN request_services rs ON rs.service_id = s.id
 WHERE rs.request_id = $1
 ORDER BY s.id ASC;
+
+-- name: ListServicesByLang :many
+SELECT
+    id,
+    lang,
+    slug,
+    title,
+    short_desc,
+    image_url,
+    created_at    
+FROM services
+WHERE is_active = true AND lang = $1
+ORDER BY created_at DESC;
 
 -- name: RemoveServicesByRequestID :exec
 DELETE FROM request_services

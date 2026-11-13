@@ -35,7 +35,7 @@ func (h *Handler) CreateSurvey(c *gin.Context) {
 }
 
 func (h *Handler) GetSurveyByID(c *gin.Context) {
-	id, err := parseID(c)
+	requestID, err := parseID(c)
 	if err != nil {
 		response.Error(c, http.StatusBadRequest, msgInvalidSurveyID, err)
 		return
@@ -47,7 +47,7 @@ func (h *Handler) GetSurveyByID(c *gin.Context) {
 		return
 	}
 
-	survey, err := h.service.Survey.GetByID(c.Request.Context(), id, claims.UserID)
+	survey, err := h.service.Survey.GetByID(c.Request.Context(), requestID, claims.UserID)
 	if err != nil {
 		response.ServiceError(c, err)
 		return
@@ -109,7 +109,7 @@ func (h *Handler) ListAllSurveys(c *gin.Context) {
 }
 
 func (h *Handler) UpdateSurveyStatus(c *gin.Context) {
-	id, err := parseID(c)
+	requestID, err := parseID(c)
 	if err != nil {
 		response.Error(c, http.StatusBadRequest, msgInvalidSurveyID, err)
 		return
@@ -121,7 +121,7 @@ func (h *Handler) UpdateSurveyStatus(c *gin.Context) {
 		return
 	}
 
-	survey, err := h.service.Survey.UpdateStatus(c.Request.Context(), id, req.Status)
+	survey, err := h.service.Survey.UpdateStatus(c.Request.Context(), requestID, req.Status)
 	if err != nil {
 		response.ServiceError(c, err)
 		return
@@ -131,13 +131,13 @@ func (h *Handler) UpdateSurveyStatus(c *gin.Context) {
 }
 
 func (h *Handler) DeleteSurvey(c *gin.Context) {
-	id, err := parseID(c)
+	requestID, err := parseID(c)
 	if err != nil {
 		response.Error(c, http.StatusBadRequest, msgInvalidSurveyID, err)
 		return
 	}
 
-	if err := h.service.Survey.Delete(c.Request.Context(), id); err != nil {
+	if err := h.service.Survey.Delete(c.Request.Context(), requestID); err != nil {
 		response.ServiceError(c, err)
 		return
 	}

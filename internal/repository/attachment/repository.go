@@ -59,8 +59,8 @@ func (r *repository) ListByRequestID(ctx context.Context, requestID int64) ([]*m
 	return attachments, nil
 }
 
-func (r *repository) GetByID(ctx context.Context, id int64) (*models.RequestAttachment, error) {
-	row, err := r.q.GetAttachmentByID(ctx, id)
+func (r *repository) GetByID(ctx context.Context, attachmentID int64) (*models.RequestAttachment, error) {
+	row, err := r.q.GetAttachmentByID(ctx, attachmentID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, models.ErrNotFound
@@ -71,8 +71,8 @@ func (r *repository) GetByID(ctx context.Context, id int64) (*models.RequestAtta
 	return toModel(row), nil
 }
 
-func (r *repository) Delete(ctx context.Context, id int64) error {
-	if err := r.q.DeleteRequestAttachment(ctx, id); err != nil {
+func (r *repository) Delete(ctx context.Context, attachmentID int64) error {
+	if err := r.q.DeleteRequestAttachment(ctx, attachmentID); err != nil {
 		return fmt.Errorf("attachment repository: delete by id: %w", err)
 	}
 
