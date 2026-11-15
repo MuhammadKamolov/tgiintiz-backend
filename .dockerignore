@@ -1,0 +1,9 @@
+.git
+.gitignore
+.env
+*.log
+app.log
+bin/
+uploads/*
+docs/
+.DS_Store

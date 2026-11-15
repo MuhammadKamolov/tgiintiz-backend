@@ -5,6 +5,7 @@ import (
 	"tgiintiz/internal/models"
 	attachmentRepo "tgiintiz/internal/repository/attachment"
 	catalogRepo "tgiintiz/internal/repository/catalog"
+	sessionRepo "tgiintiz/internal/repository/session"
 	"tgiintiz/internal/repository/sqlc"
 	surveyRepo "tgiintiz/internal/repository/survey"
 	userRepo "tgiintiz/internal/repository/user"
@@ -71,6 +72,6 @@ func NewRepositories(pool *pgxpool.Pool, redisClient *redis.Client) *Repositorie
 		Survey:     surveyRepo.New(q),
 		Catalog:    catalogRepo.New(q),
 		Attachment: attachmentRepo.New(q),
-		Session:    NewSessionRepository(redisClient),
+		Session:    sessionRepo.New(redisClient),
 	}
 }

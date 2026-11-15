@@ -1,4 +1,4 @@
-package repository
+package session
 
 import (
 	"context"
@@ -14,7 +14,7 @@ type sessionRepository struct {
 	client *redis.Client
 }
 
-func NewSessionRepository(client *redis.Client) SessionRepository {
+func New(client *redis.Client) *sessionRepository {
 	return &sessionRepository{client: client}
 }
 
