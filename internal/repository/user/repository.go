@@ -62,8 +62,8 @@ func (r *repository) GetByEmail(ctx context.Context, email string) (*models.User
 	return toModel(user), nil
 }
 
-func (r *repository) GetByID(ctx context.Context, id int64) (*models.User, error) {
-	user, err := r.q.GetUserByID(ctx, id)
+func (r *repository) GetByID(ctx context.Context, userID int64) (*models.User, error) {
+	user, err := r.q.GetUserByID(ctx, userID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, models.ErrNotFound

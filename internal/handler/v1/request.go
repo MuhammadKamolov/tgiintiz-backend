@@ -9,9 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const maxBodyBytes = 1 << 20
-
 func decodeJSON(c *gin.Context, dst any) bool {
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxBodyBytes)
+
 	if err := c.ShouldBindJSON(dst); err != nil {
 		response.Error(c, http.StatusBadRequest, "invalid JSON body", err)
 		return false
@@ -25,8 +25,7 @@ func parseID(c *gin.Context) (int64, error) {
 }
 
 func parsePagination(c *gin.Context) models.Pagination {
-
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "z"))
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
 
 	return models.NewPagination(page, pageSize)

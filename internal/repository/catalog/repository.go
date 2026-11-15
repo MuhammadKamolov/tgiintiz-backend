@@ -8,8 +8,11 @@ import (
 	"tgiintiz/internal/repository/sqlc"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const uniqueViolation = "23505"
 
 type repository struct {
 	q *sqlc.Queries
@@ -61,6 +64,10 @@ func (r *repository) Create(ctx context.Context, in models.CreateServiceInput) (
 	}
 	row, err := r.q.CreateService(ctx, args)
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == uniqueViolation {
+			return nil, models.ErrSlugTaken
+		}
 		return nil, fmt.Errorf("catalog repository: create: %w", err)
 	}
 

@@ -10,8 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const msgInvalidSurveyID = "invalid survey id"
-
 func (h *Handler) CreateSurvey(c *gin.Context) {
 	var req surveyRequest
 
@@ -72,7 +70,6 @@ func (h *Handler) ListMySurveys(c *gin.Context) {
 	}
 
 	resp := make([]surveyResponse, 0, len(surveys))
-
 	for _, s := range surveys {
 		resp = append(resp, newSurveyResponse(s))
 	}
@@ -100,7 +97,6 @@ func (h *Handler) ListAllSurveys(c *gin.Context) {
 	}
 
 	resp := make([]surveyResponse, 0, len(survey))
-
 	for _, s := range survey {
 		resp = append(resp, newSurveyResponse(s))
 	}
@@ -142,5 +138,80 @@ func (h *Handler) DeleteSurvey(c *gin.Context) {
 		return
 	}
 
-	response.JSON(c, http.StatusOK, nil)
+	c.Status(http.StatusNoContent)
+}
+
+func (h *Handler) AddServiceToSurvey(c *gin.Context) {
+	claims := middleware.ClaimsFromContext(c)
+	if claims == nil {
+		response.Error(c, http.StatusUnauthorized, "unauthorized", errors.New("claims not found in context"))
+		return
+	}
+
+	requestID, err := parseID(c)
+	if err != nil {
+		response.Error(c, http.StatusBadRequest, msgInvalidRequestID, err)
+		return
+	}
+
+	var req addSurveyServiceRequest
+	if !decodeJSON(c, &req) {
+		return
+	}
+
+	if err := h.service.Survey.AddService(c.Request.Context(), requestID, req.ServiceID, *claims); err != nil {
+		response.ServiceError(c, err)
+		return
+	}
+
+	c.Status(http.StatusCreated)
+}
+
+func (h *Handler) ListSurveyServices(c *gin.Context) {
+	claims := middleware.ClaimsFromContext(c)
+	if claims == nil {
+		response.Error(c, http.StatusUnauthorized, "unauthorized", errors.New("claims not found in context"))
+		return
+	}
+
+	requestID, err := parseID(c)
+	if err != nil {
+		response.Error(c, http.StatusBadRequest, msgInvalidRequestID, err)
+		return
+	}
+
+	serviceCards, err := h.service.Survey.ListServices(c.Request.Context(), requestID, *claims)
+	if err != nil {
+		response.ServiceError(c, err)
+		return
+	}
+
+	resp := make([]serviceCardResponse, 0, len(serviceCards))
+	for _, c := range serviceCards {
+		resp = append(resp, newServiceCardResponse(c))
+	}
+
+	response.JSON(c, http.StatusOK, resp)
+
+}
+
+func (h *Handler) RemoveSurveyServices(c *gin.Context) {
+	claims := middleware.ClaimsFromContext(c)
+	if claims == nil {
+		response.Error(c, http.StatusUnauthorized, "unauthorized", errors.New("claims not found in context"))
+		return
+	}
+
+	requestID, err := parseID(c)
+	if err != nil {
+		response.Error(c, http.StatusBadRequest, msgInvalidRequestID, err)
+		return
+	}
+
+	if err := h.service.Survey.RemoveServices(c.Request.Context(), requestID, *claims); err != nil {
+		response.ServiceError(c, err)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }

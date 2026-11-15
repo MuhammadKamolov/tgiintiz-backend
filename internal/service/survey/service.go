@@ -83,12 +83,12 @@ func (s *Service) ListByStatus(ctx context.Context, status string, p models.Pagi
 	return survey, nil
 }
 
-func (s *Service) UpdateStatus(ctx context.Context, id int64, status string) (*models.SurveyRequest, error) {
+func (s *Service) UpdateStatus(ctx context.Context, requestID int64, status string) (*models.SurveyRequest, error) {
 	if !models.SurveyStatus(status).IsValid() {
 		return nil, fmt.Errorf("%w: unknown status %q", models.ErrInvalidInput, status)
 	}
 
-	survey, err := s.requestRepo.UpdateStatus(ctx, id, status)
+	survey, err := s.requestRepo.UpdateStatus(ctx, requestID, status)
 	if err != nil {
 		return nil, fmt.Errorf("survey service: update status: %w", err)
 	}
@@ -96,8 +96,8 @@ func (s *Service) UpdateStatus(ctx context.Context, id int64, status string) (*m
 	return survey, nil
 }
 
-func (s *Service) Delete(ctx context.Context, id int64) error {
-	if err := s.requestRepo.Delete(ctx, id); err != nil {
+func (s *Service) Delete(ctx context.Context, requestID int64) error {
+	if err := s.requestRepo.Delete(ctx, requestID); err != nil {
 		return fmt.Errorf("survey service: delete survey: %w", err)
 	}
 
@@ -191,7 +191,7 @@ func (s *Service) AddService(ctx context.Context, requestID, serviceID int64, cl
 
 	service, err := s.catalogRepo.GetByID(ctx, serviceID)
 	if err != nil {
-		return fmt.Errorf("servey service: get service by id: %w", err)
+		return fmt.Errorf("survey service: add service: %w", err)
 	}
 
 	if !service.IsActive {

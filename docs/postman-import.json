@@ -1,12 +1,54 @@
 {
 	"info": {
 		"_postman_id": "tgiintiz-backend-complete-suite",
-		"name": "TGIINTIZ API (Complete Flow)",
+		"name": "TGIINTIZ API (Complete Flow + Catalog)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "accessToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refreshToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "adminAccessToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "surveyId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "attachmentId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "serviceId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "serviceSlug",
+			"value": "engineering-geology",
+			"type": "string"
+		}
+	],
 	"item": [
 		{
-			"name": "01. Auth - Register",
+			"name": "01. Auth - Register Client",
 			"request": {
 				"method": "POST",
 				"header": [
@@ -27,7 +69,7 @@
 			}
 		},
 		{
-			"name": "02. Auth - Login (Saves Tokens)",
+			"name": "02. Auth - Login Client (Saves Tokens)",
 			"event": [
 				{
 					"listen": "test",
@@ -61,7 +103,40 @@
 			}
 		},
 		{
-			"name": "03. Users - Get Me",
+			"name": "03. Auth - Login Admin (Saves Admin Token)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const res = pm.response.json();",
+							"if (res.access_token) { pm.collectionVariables.set('adminAccessToken', res.access_token); }"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"password123\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/auth/login",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "auth", "login"]
+				}
+			}
+		},
+		{
+			"name": "04. Users - Get Me",
 			"request": {
 				"method": "GET",
 				"header": [
@@ -78,7 +153,148 @@
 			}
 		},
 		{
-			"name": "04. Surveys - Create Survey (Saves ID)",
+			"name": "05. Admin Catalog - Create Service (Saves ID & Slug)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const res = pm.response.json();",
+							"if (res.id) { pm.collectionVariables.set('serviceId', res.id); }",
+							"if (res.slug) { pm.collectionVariables.set('serviceSlug', res.slug); }"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{adminAccessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"lang\": \"ru\",\n    \"slug\": \"engineering-geology\",\n    \"title\": \"Инженерно-геологические изыскания\",\n    \"short_desc\": \"Комплексное изучение грунтов и подземных вод площадки строительства\",\n    \"full_desc\": \"Бурение разведочных скважин, статическое и динамическое зондирование, лабораторные испытания физико-механических свойств грунтов.\",\n    \"image_url\": \"/uploads/services/geology.jpg\",\n    \"standards\": [\"ГОСТ 25100-2020\", \"СП 47.13330.2016\"],\n    \"equipment\": [\"Буровая установка УРБ-2А2\", \"Комплект статического зондирования\"],\n    \"is_active\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/admin/services",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "admin", "services"]
+				}
+			}
+		},
+		{
+			"name": "06. Admin Catalog - Create Service (Negative: Invalid Lang)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{adminAccessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"lang\": \"de\",\n    \"slug\": \"test-service\",\n    \"title\": \"Тестовая услуга\",\n    \"short_desc\": \"Проверка валидации языка\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/admin/services",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "admin", "services"]
+				}
+			}
+		},
+		{
+			"name": "07. Admin Catalog - Get Service By ID",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{adminAccessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/admin/services/{{serviceId}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "admin", "services", "{{serviceId}}"]
+				}
+			}
+		},
+		{
+			"name": "08. Admin Catalog - Update Service (PATCH)",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{adminAccessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"Инженерно-геологические изыскания (обновлено)\",\n    \"standards\": [\"ГОСТ 25100-2020\", \"СП 47.13330.2016\", \"ГОСТ 12248-2010\"],\n    \"is_active\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/admin/services/{{serviceId}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "admin", "services", "{{serviceId}}"]
+				}
+			}
+		},
+		{
+			"name": "09. Public Catalog - List Services By Lang",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/services?lang=ru",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "services"],
+					"query": [
+						{
+							"key": "lang",
+							"value": "ru"
+						}
+					]
+				}
+			}
+		},
+		{
+			"name": "10. Public Catalog - Get Service By Slug",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/services/{{serviceSlug}}?lang=ru",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "services", "{{serviceSlug}}"],
+					"query": [
+						{
+							"key": "lang",
+							"value": "ru"
+						}
+					]
+				}
+			}
+		},
+		{
+			"name": "11. Surveys - Create Survey (Saves ID)",
 			"event": [
 				{
 					"listen": "test",
@@ -115,7 +331,7 @@
 			}
 		},
 		{
-			"name": "05. Surveys - Create Survey (Negative: Empty Title)",
+			"name": "12. Surveys - Create Survey (Negative: Empty Title)",
 			"request": {
 				"method": "POST",
 				"header": [
@@ -140,7 +356,7 @@
 			}
 		},
 		{
-			"name": "06. Surveys - List My Surveys (Pagination)",
+			"name": "13. Surveys - List My Surveys (Pagination)",
 			"request": {
 				"method": "GET",
 				"header": [
@@ -154,14 +370,20 @@
 					"host": ["{{baseUrl}}"],
 					"path": ["api", "v1", "surveys"],
 					"query": [
-						{"key": "page", "value": "1"},
-						{"key": "page_size", "value": "10"}
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "page_size",
+							"value": "10"
+						}
 					]
 				}
 			}
 		},
 		{
-			"name": "07. Surveys - Get By ID",
+			"name": "14. Surveys - Get By ID",
 			"request": {
 				"method": "GET",
 				"header": [
@@ -178,7 +400,7 @@
 			}
 		},
 		{
-			"name": "08. Surveys - Get By ID (Negative: 404)",
+			"name": "15. Surveys - Get By ID (Negative: 404)",
 			"request": {
 				"method": "GET",
 				"header": [
@@ -195,7 +417,66 @@
 			}
 		},
 		{
-			"name": "09. Attachments - Upload File (Saves Attachment ID)",
+			"name": "16. Survey Services - Add Service To Survey",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"service_id\": {{serviceId}}\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/surveys/{{surveyId}}/services",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "surveys", "{{surveyId}}", "services"]
+				}
+			}
+		},
+		{
+			"name": "17. Survey Services - List Survey Services",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/surveys/{{surveyId}}/services",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "surveys", "{{surveyId}}", "services"]
+				}
+			}
+		},
+		{
+			"name": "18. Survey Services - Remove All Services From Survey",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/surveys/{{surveyId}}/services",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "surveys", "{{surveyId}}", "services"]
+				}
+			}
+		},
+		{
+			"name": "19. Attachments - Upload File (Saves Attachment ID)",
 			"event": [
 				{
 					"listen": "test",
@@ -203,9 +484,7 @@
 						"exec": [
 							"const res = pm.response.json();",
 							"if (res.ID) { pm.collectionVariables.set('attachmentId', res.ID); }",
-							"if (res.id) { pm.collectionVariables.set('attachmentId', res.id); }",
-							"if (res.FileURL) { pm.collectionVariables.set('fileUrl', res.FileURL); }",
-							"if (res.file_url) { pm.collectionVariables.set('fileUrl', res.file_url); }"
+							"if (res.id) { pm.collectionVariables.set('attachmentId', res.id); }"
 						],
 						"type": "text/javascript"
 					}
@@ -237,7 +516,7 @@
 			}
 		},
 		{
-			"name": "10. Attachments - List Files For Survey",
+			"name": "20. Attachments - List Files For Survey",
 			"request": {
 				"method": "GET",
 				"header": [
@@ -254,18 +533,7 @@
 			}
 		},
 		{
-			"name": "11. Attachments - Download Static File",
-			"request": {
-				"method": "GET",
-				"url": {
-					"raw": "{{baseUrl}}{{fileUrl}}",
-					"host": ["{{baseUrl}}"],
-					"path": ["{{fileUrl}}"]
-				}
-			}
-		},
-		{
-			"name": "12. Attachments - Delete File (204 No Content)",
+			"name": "21. Attachments - Delete Attachment",
 			"request": {
 				"method": "DELETE",
 				"header": [
@@ -282,7 +550,93 @@
 			}
 		},
 		{
-			"name": "13. Auth - Refresh Token (Rotation)",
+			"name": "22. Admin Surveys - List All Surveys",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{adminAccessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/admin/surveys?page=1&page_size=10",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "admin", "surveys"],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "page_size",
+							"value": "10"
+						}
+					]
+				}
+			}
+		},
+		{
+			"name": "23. Admin Surveys - Update Survey Status",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{adminAccessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"status\": \"in_progress\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/admin/surveys/{{surveyId}}/status",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "admin", "surveys", "{{surveyId}}", "status"]
+				}
+			}
+		},
+		{
+			"name": "24. Admin Surveys - Delete Survey",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{adminAccessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/admin/surveys/{{surveyId}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "admin", "surveys", "{{surveyId}}"]
+				}
+			}
+		},
+		{
+			"name": "25. Admin Catalog - Delete Service",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{adminAccessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/admin/services/{{serviceId}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "admin", "services", "{{serviceId}}"]
+				}
+			}
+		},
+		{
+			"name": "26. Auth - Refresh Token",
 			"event": [
 				{
 					"listen": "test",
@@ -316,54 +670,7 @@
 			}
 		},
 		{
-			"name": "14. Admin - List All Surveys (Status Filter)",
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer {{accessToken}}"
-					}
-				],
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/admin/surveys?status=&page=1&page_size=10",
-					"host": ["{{baseUrl}}"],
-					"path": ["api", "v1", "admin", "surveys"],
-					"query": [
-						{"key": "status", "value": ""},
-						{"key": "page", "value": "1"},
-						{"key": "page_size", "value": "10"}
-					]
-				}
-			}
-		},
-		{
-			"name": "15. Admin - Update Survey Status",
-			"request": {
-				"method": "PATCH",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					},
-					{
-						"key": "Authorization",
-						"value": "Bearer {{accessToken}}"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"status\": \"in_progress\"\n}"
-				},
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/admin/surveys/{{surveyId}}/status",
-					"host": ["{{baseUrl}}"],
-					"path": ["api", "v1", "admin", "surveys", "{{surveyId}}", "status"]
-				}
-			}
-		},
-		{
-			"name": "16. Auth - Logout",
+			"name": "27. Auth - Logout",
 			"request": {
 				"method": "POST",
 				"header": [
@@ -383,13 +690,5 @@
 				}
 			}
 		}
-	],
-	"variable": [
-		{"key": "baseUrl", "value": "http://localhost:8080"},
-		{"key": "accessToken", "value": ""},
-		{"key": "refreshToken", "value": ""},
-		{"key": "surveyId", "value": "1"},
-		{"key": "attachmentId", "value": "1"},
-		{"key": "fileUrl", "value": "/uploads/test.png"}
 	]
 }

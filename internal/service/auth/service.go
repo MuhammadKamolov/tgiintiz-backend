@@ -20,13 +20,13 @@ type Service struct {
 }
 
 func New(
-	users repository.UserRepository,
-	session repository.SessionRepository,
+	userRepo repository.UserRepository,
+	sessionRepo repository.SessionRepository,
 	tokens TokenConfig,
 ) *Service {
 	return &Service{
-		userRepo:    users,
-		sessionRepo: session,
+		userRepo:    userRepo,
+		sessionRepo: sessionRepo,
 		jwtSecret:   []byte(tokens.Secret),
 		accessTTL:   tokens.AccessTTL,
 		refreshTTL:  tokens.RefreshTTL,

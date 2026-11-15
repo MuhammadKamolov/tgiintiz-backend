@@ -52,6 +52,10 @@ func (h *Handler) InitRoutes() http.Handler {
 			surveys.GET("", apiV1.ListMySurveys)
 			surveys.GET("/:id", apiV1.GetSurveyByID)
 
+			surveys.POST("/:id/services", apiV1.AddServiceToSurvey)
+			surveys.GET("/:id/services", apiV1.ListSurveyServices)
+			surveys.DELETE("/:id/services", apiV1.RemoveSurveyServices)
+
 			surveys.POST("/:id/attachments", apiV1.UploadAttachment)
 			surveys.GET("/:id/attachments", apiV1.ListAttachments)
 		}
@@ -62,6 +66,12 @@ func (h *Handler) InitRoutes() http.Handler {
 			attachments.DELETE("/:id", apiV1.DeleteAttachment)
 		}
 
+		services := api.Group("/services")
+		{
+			services.GET("", apiV1.ListServices)
+			services.GET("/:slug", apiV1.GetServiceBySlug)
+		}
+
 		admin := api.Group("/admin/surveys")
 		admin.Use(authMiddleware, adminMiddleware)
 		{
@@ -69,6 +79,16 @@ func (h *Handler) InitRoutes() http.Handler {
 			admin.PATCH("/:id/status", apiV1.UpdateSurveyStatus)
 			admin.DELETE("/:id", apiV1.DeleteSurvey)
 		}
+
+		admin = api.Group("/admin/services")
+		admin.Use(authMiddleware, adminMiddleware)
+		{
+			admin.POST("", apiV1.CreateService)
+			admin.GET("/:id", apiV1.GetServiceByID)
+			admin.PATCH("/:id", apiV1.UpdateService)
+			admin.DELETE("/:id", apiV1.DeleteService)
+		}
+
 	}
 
 	return router

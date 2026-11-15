@@ -27,7 +27,7 @@ type AuthService interface {
 }
 
 type UserService interface {
-	GetByID(ctx context.Context, id int64) (*models.User, error)
+	GetByID(ctx context.Context, userID int64) (*models.User, error)
 }
 
 type SurveyService interface {
