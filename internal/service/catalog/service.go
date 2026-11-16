@@ -42,11 +42,11 @@ func (s *Service) GetBySlugAndLang(ctx context.Context, slug, lang string) (*mod
 	lang = normalizeLang(lang)
 
 	if slug == "" {
-		return nil, fmt.Errorf("slug are required: %w", models.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: slug is required", models.ErrInvalidInput)
 	}
 
 	if !models.Lang(lang).IsValid() {
-		return nil, fmt.Errorf("%w: invalid lang (allowed: ru, tj, en)", models.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: invalid lang (c)", models.ErrInvalidInput)
 	}
 
 	service, err := s.catalogRepo.GetBySlugAndLang(ctx, slug, lang)
@@ -64,7 +64,7 @@ func (s *Service) ListByLang(ctx context.Context, lang string) ([]*models.Servic
 	lang = normalizeLang(lang)
 
 	if !models.Lang(lang).IsValid() {
-		return nil, fmt.Errorf("%w: invalid lang (allowed: RU, TJ, EN)", models.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: invalid lang (allowed: ru, tj, en)", models.ErrInvalidInput)
 	}
 
 	cards, err := s.catalogRepo.ListByLang(ctx, lang)

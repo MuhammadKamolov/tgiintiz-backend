@@ -5,4 +5,5 @@ const (
 	msgInvalidRequestID = "invalid request id"
 	msgInvalidServiceID = "invalid service id"
 	maxBodyBytes        = 1 << 20
+	maxUploadBytes      = 10 << 20
 )

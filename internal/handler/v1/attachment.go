@@ -10,8 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const maxBytes = 10 << 20
-
 func (h *Handler) UploadAttachment(c *gin.Context) {
 	claims := middleware.ClaimsFromContext(c)
 	if claims == nil {
@@ -25,11 +23,11 @@ func (h *Handler) UploadAttachment(c *gin.Context) {
 		return
 	}
 
-	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxBytes)
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxUploadBytes)
 
 	fileHeader, err := c.FormFile("file")
 	if err != nil {
-		response.Error(c, http.StatusBadRequest, "fail form file", err)
+		response.Error(c, http.StatusBadRequest, "failed to read form file", err)
 		return
 	}
 
@@ -41,8 +39,7 @@ func (h *Handler) UploadAttachment(c *gin.Context) {
 	defer file.Close()
 
 	in := models.UploadAttachmentInput{
-		UserID:    claims.UserID,
-		UserRole:  claims.Role,
+		Claims:    *claims,
 		RequestID: requestID,
 		FileName:  fileHeader.Filename,
 		FileSize:  fileHeader.Size,

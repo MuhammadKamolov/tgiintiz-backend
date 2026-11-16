@@ -70,8 +70,8 @@ func (h *Handler) ListMySurveys(c *gin.Context) {
 	}
 
 	resp := make([]surveyResponse, 0, len(surveys))
-	for _, s := range surveys {
-		resp = append(resp, newSurveyResponse(s))
+	for _, survey := range surveys {
+		resp = append(resp, newSurveyResponse(survey))
 	}
 
 	response.JSON(c, http.StatusOK, resp)
@@ -79,26 +79,26 @@ func (h *Handler) ListMySurveys(c *gin.Context) {
 
 func (h *Handler) ListAllSurveys(c *gin.Context) {
 	var (
-		survey []*models.SurveyRequest
-		err    error
+		surveys []*models.SurveyRequest
+		err     error
 	)
 
 	status := c.Query("status")
 	pagination := parsePagination(c)
 
 	if status != "" {
-		survey, err = h.service.Survey.ListByStatus(c.Request.Context(), status, pagination)
+		surveys, err = h.service.Survey.ListByStatus(c.Request.Context(), status, pagination)
 	} else {
-		survey, err = h.service.Survey.ListAll(c.Request.Context(), pagination)
+		surveys, err = h.service.Survey.ListAll(c.Request.Context(), pagination)
 	}
 	if err != nil {
 		response.ServiceError(c, err)
 		return
 	}
 
-	resp := make([]surveyResponse, 0, len(survey))
-	for _, s := range survey {
-		resp = append(resp, newSurveyResponse(s))
+	resp := make([]surveyResponse, 0, len(surveys))
+	for _, survey := range surveys {
+		resp = append(resp, newSurveyResponse(survey))
 	}
 
 	response.JSON(c, http.StatusOK, resp)
@@ -187,8 +187,8 @@ func (h *Handler) ListSurveyServices(c *gin.Context) {
 	}
 
 	resp := make([]serviceCardResponse, 0, len(serviceCards))
-	for _, c := range serviceCards {
-		resp = append(resp, newServiceCardResponse(c))
+	for _, card := range serviceCards {
+		resp = append(resp, newServiceCardResponse(card))
 	}
 
 	response.JSON(c, http.StatusOK, resp)

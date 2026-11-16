@@ -5,15 +5,15 @@ import (
 	"time"
 )
 
-type registerResponse struct {
+type userResponse struct {
 	ID        int64     `json:"id"`
 	Email     string    `json:"email"`
 	Role      string    `json:"role"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
-func newRegisterResponse(u *models.User) registerResponse {
-	return registerResponse{
+func newUserResponse(u *models.User) userResponse {
+	return userResponse{
 		ID:        u.ID,
 		Email:     u.Email,
 		Role:      u.Role,

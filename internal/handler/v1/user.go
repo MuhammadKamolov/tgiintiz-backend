@@ -22,7 +22,7 @@ func (h *Handler) Me(c *gin.Context) {
 		return
 	}
 
-	resp := newRegisterResponse(user)
+	resp := newUserResponse(user)
 
 	response.JSON(c, http.StatusOK, resp)
 

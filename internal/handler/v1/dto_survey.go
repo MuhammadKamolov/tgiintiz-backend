@@ -28,14 +28,14 @@ type surveyResponse struct {
 	CreatedAt   time.Time `json:"created_at"`
 }
 
-func newSurveyResponse(u *models.SurveyRequest) surveyResponse {
+func newSurveyResponse(s *models.SurveyRequest) surveyResponse {
 	return surveyResponse{
-		ID:          u.ID,
-		Title:       u.Title,
-		Location:    u.Location,
-		Description: u.Description,
-		Status:      u.Status,
-		CreatedAt:   u.CreatedAt,
+		ID:          s.ID,
+		Title:       s.Title,
+		Location:    s.Location,
+		Description: s.Description,
+		Status:      s.Status,
+		CreatedAt:   s.CreatedAt,
 	}
 }
 

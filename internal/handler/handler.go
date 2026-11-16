@@ -31,6 +31,7 @@ func (h *Handler) InitRoutes() http.Handler {
 
 	api := router.Group("/api/v1")
 	{
+		// 1. Публичный контур (без авторизации)
 		auth := api.Group("/auth")
 		{
 			auth.POST("/register", apiV1.Register)
@@ -39,6 +40,13 @@ func (h *Handler) InitRoutes() http.Handler {
 			auth.POST("/logout", apiV1.Logout)
 		}
 
+		services := api.Group("/services")
+		{
+			services.GET("", apiV1.ListServices)
+			services.GET("/:slug", apiV1.GetServiceBySlug)
+		}
+
+		// 2. Клиентский контур (требуется авторизация)
 		users := api.Group("/users")
 		users.Use(authMiddleware)
 		{
@@ -66,29 +74,25 @@ func (h *Handler) InitRoutes() http.Handler {
 			attachments.DELETE("/:id", apiV1.DeleteAttachment)
 		}
 
-		services := api.Group("/services")
-		{
-			services.GET("", apiV1.ListServices)
-			services.GET("/:slug", apiV1.GetServiceBySlug)
-		}
-
-		admin := api.Group("/admin/surveys")
+		// 3. Админский контур (авторизация + роль admin)
+		admin := api.Group("/admin")
 		admin.Use(authMiddleware, adminMiddleware)
 		{
-			admin.GET("", apiV1.ListAllSurveys)
-			admin.PATCH("/:id/status", apiV1.UpdateSurveyStatus)
-			admin.DELETE("/:id", apiV1.DeleteSurvey)
-		}
+			adminSurveys := admin.Group("/surveys")
+			{
+				adminSurveys.GET("", apiV1.ListAllSurveys)
+				adminSurveys.PATCH("/:id/status", apiV1.UpdateSurveyStatus)
+				adminSurveys.DELETE("/:id", apiV1.DeleteSurvey)
+			}
 
-		admin = api.Group("/admin/services")
-		admin.Use(authMiddleware, adminMiddleware)
-		{
-			admin.POST("", apiV1.CreateService)
-			admin.GET("/:id", apiV1.GetServiceByID)
-			admin.PATCH("/:id", apiV1.UpdateService)
-			admin.DELETE("/:id", apiV1.DeleteService)
+			adminServices := admin.Group("/services")
+			{
+				adminServices.POST("", apiV1.CreateService)
+				adminServices.GET("/:id", apiV1.GetServiceByID)
+				adminServices.PATCH("/:id", apiV1.UpdateService)
+				adminServices.DELETE("/:id", apiV1.DeleteService)
+			}
 		}
-
 	}
 
 	return router

@@ -48,6 +48,8 @@ func ServiceError(c *gin.Context, err error) {
 		Error(c, http.StatusUnauthorized, models.ErrInvalidToken.Error(), err)
 	case errors.Is(err, models.ErrForbidden):
 		Error(c, http.StatusForbidden, models.ErrForbidden.Error(), err)
+	case errors.Is(err, models.ErrSlugTaken):
+		Error(c, http.StatusConflict, models.ErrSlugTaken.Error(), err)
 
 	default:
 		Error(c, http.StatusInternalServerError, "internal server error", err)

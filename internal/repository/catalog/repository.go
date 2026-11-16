@@ -121,8 +121,8 @@ func (r *repository) ListByLang(ctx context.Context, lang string) ([]*models.Ser
 	}
 
 	cards := make([]*models.ServiceCard, 0, len(rows))
-	for _, r := range rows {
-		cards = append(cards, toCardModel(r))
+	for _, row := range rows {
+		cards = append(cards, toCardModel(row))
 	}
 
 	return cards, nil
@@ -134,9 +134,8 @@ func (r *repository) ListByRequestID(ctx context.Context, requestID int64) ([]*m
 	}
 
 	cards := make([]*models.ServiceCard, 0, len(rows))
-
-	for _, r := range rows {
-		cards = append(cards, toCardModel(sqlc.ListServicesByLangRow(r)))
+	for _, row := range rows {
+		cards = append(cards, toCardModel(sqlc.ListServicesByLangRow(row)))
 	}
 
 	return cards, nil

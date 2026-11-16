@@ -15,8 +15,7 @@ type RequestAttachment struct {
 }
 
 type UploadAttachmentInput struct {
-	UserID    int64
-	UserRole  string
+	Claims    TokenClaims
 	RequestID int64
 	FileName  string
 	FileSize  int64

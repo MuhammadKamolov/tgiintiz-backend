@@ -89,8 +89,8 @@ func (h *Handler) ListServices(c *gin.Context) {
 	}
 
 	resp := make([]serviceCardResponse, 0, len(serviceCards))
-	for _, c := range serviceCards {
-		resp = append(resp, newServiceCardResponse(c))
+	for _, card := range serviceCards {
+		resp = append(resp, newServiceCardResponse(card))
 	}
 
 	response.JSON(c, http.StatusOK, resp)
