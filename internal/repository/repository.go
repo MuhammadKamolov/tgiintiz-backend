@@ -5,6 +5,7 @@ import (
 	"tgiintiz/internal/models"
 	attachmentRepo "tgiintiz/internal/repository/attachment"
 	catalogRepo "tgiintiz/internal/repository/catalog"
+	projectRepo "tgiintiz/internal/repository/project"
 	sessionRepo "tgiintiz/internal/repository/session"
 	"tgiintiz/internal/repository/sqlc"
 	surveyRepo "tgiintiz/internal/repository/survey"
@@ -20,6 +21,7 @@ type Repositories struct {
 	Survey     SurveyRepository
 	Attachment AttachmentRepository
 	Catalog    CatalogRepository
+	Project    ProjectRepository
 	Session    SessionRepository
 }
 
@@ -64,6 +66,21 @@ type CatalogRepository interface {
 	Delete(ctx context.Context, serviceID int64) error
 }
 
+type ProjectRepository interface {
+	AddService(ctx context.Context, projectID, serviceID int64) error
+	RemoveService(ctx context.Context, projectID, serviceID int64) error
+	Create(ctx context.Context, in models.CreateProjectInput) (*models.Project, error)
+	Update(ctx context.Context, p *models.Project) (*models.Project, error)
+	Delete(ctx context.Context, projectID int64) error
+
+	CountActiveByLang(ctx context.Context, lang string) (int64, error)
+	GetByID(ctx context.Context, projectID int64) (*models.Project, error)
+	GetBySlugAndLang(ctx context.Context, slug, lang string) (*models.Project, error)
+	ListActiveByLang(ctx context.Context, lang string, limit, offset int32) ([]*models.Project, error)
+	ListServicesByProjectID(ctx context.Context, projectID int64) ([]*models.ServiceCard, error)
+	ListByServiceID(ctx context.Context, serviceID int64, lang string) ([]*models.Project, error)
+}
+
 func NewRepositories(pool *pgxpool.Pool, redisClient *redis.Client) *Repositories {
 	q := sqlc.New(pool)
 
@@ -72,6 +89,7 @@ func NewRepositories(pool *pgxpool.Pool, redisClient *redis.Client) *Repositorie
 		Survey:     surveyRepo.New(q),
 		Catalog:    catalogRepo.New(q),
 		Attachment: attachmentRepo.New(q),
+		Project:    projectRepo.New(q),
 		Session:    sessionRepo.New(redisClient),
 	}
 }
