@@ -18,8 +18,8 @@ const (
 
 type tokenClaims struct {
 	jwt.RegisteredClaims
-	Type string `json:"type"`
-	Role string `json:"role,omitempty"`
+	Type   string `json:"type"`
+	RoleID int64  `json:"role_id,omitempty"`
 }
 
 func (s *Service) newTokenPair(ctx context.Context, u *models.User) (*models.TokenPair, error) {
@@ -33,7 +33,7 @@ func (s *Service) newTokenPair(ctx context.Context, u *models.User) (*models.Tok
 	accessToken, err := s.sign(tokenClaims{
 		RegisteredClaims: registeredClaims(u.ID, sessionID, now, s.accessTTL),
 		Type:             accessTokenType,
-		Role:             u.Role,
+		RoleID:           int64(u.RoleID),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("sign access token: %w", err)
@@ -42,7 +42,7 @@ func (s *Service) newTokenPair(ctx context.Context, u *models.User) (*models.Tok
 	refreshToken, err := s.sign(tokenClaims{
 		RegisteredClaims: registeredClaims(u.ID, sessionID, now, s.refreshTTL),
 		Type:             refreshTokenType,
-		Role:             "",
+		RoleID:           int64(u.RoleID),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("sign refresh token: %w", err)

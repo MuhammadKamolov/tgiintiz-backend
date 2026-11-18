@@ -22,6 +22,11 @@ type RequestService struct {
 	ServiceID int64
 }
 
+type Role struct {
+	ID   int64
+	Name string
+}
+
 type Service struct {
 	ID        int64
 	Lang      string
@@ -51,6 +56,6 @@ type User struct {
 	ID           int64
 	Email        string
 	PasswordHash string
-	Role         string
 	CreatedAt    pgtype.Timestamptz
+	RoleID       int64
 }

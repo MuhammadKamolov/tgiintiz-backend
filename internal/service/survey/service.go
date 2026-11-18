@@ -105,7 +105,7 @@ func (s *Service) Delete(ctx context.Context, requestID int64) error {
 }
 
 func checkSurveyAccess(survey *models.SurveyRequest, claims models.TokenClaims) error {
-	if claims.Role != "admin" && survey.UserID != claims.UserID {
+	if !claims.IsAdmin() && survey.UserID != claims.UserID {
 		return models.ErrForbidden
 	}
 	return nil

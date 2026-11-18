@@ -37,6 +37,7 @@ func (s *Service) GetByID(ctx context.Context, serviceID int64) (*models.Service
 
 	return service, nil
 }
+
 func (s *Service) GetBySlugAndLang(ctx context.Context, slug, lang string) (*models.Service, error) {
 	slug = normalizeSlug(slug)
 	lang = normalizeLang(lang)

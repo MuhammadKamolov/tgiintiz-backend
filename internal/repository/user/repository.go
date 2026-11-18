@@ -26,7 +26,7 @@ func toModel(u sqlc.User) *models.User {
 		ID:           u.ID,
 		Email:        u.Email,
 		PasswordHash: u.PasswordHash,
-		Role:         u.Role,
+		RoleID:       models.RoleID(u.RoleID),
 		CreatedAt:    u.CreatedAt.Time,
 	}
 }
@@ -35,7 +35,7 @@ func (r *repository) Create(ctx context.Context, email string, hashPassword stri
 	args := sqlc.CreateUserParams{
 		Email:        email,
 		PasswordHash: hashPassword,
-		Role:         "client",
+		RoleID:       int64(models.RoleClient),
 	}
 
 	user, err := r.q.CreateUser(ctx, args)

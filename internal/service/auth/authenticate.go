@@ -28,6 +28,6 @@ func (s *Service) Authenticate(ctx context.Context, token string) (*models.Token
 
 	return &models.TokenClaims{
 		UserID: userID,
-		Role:   claims.Role,
+		RoleID: models.RoleID(claims.RoleID),
 	}, nil
 }

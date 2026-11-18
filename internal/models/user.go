@@ -4,11 +4,18 @@ import (
 	"time"
 )
 
+type RoleID int64
+
+const (
+	RoleClient RoleID = 1
+	RoleAdmin  RoleID = 2
+)
+
 type User struct {
 	ID           int64
 	Email        string
 	PasswordHash string
-	Role         string
+	RoleID       RoleID
 	CreatedAt    time.Time
 }
 
@@ -28,5 +35,9 @@ type TokenPair struct {
 }
 type TokenClaims struct {
 	UserID int64
-	Role   string
+	RoleID RoleID
+}
+
+func (c TokenClaims) IsAdmin() bool {
+	return c.RoleID == RoleAdmin
 }

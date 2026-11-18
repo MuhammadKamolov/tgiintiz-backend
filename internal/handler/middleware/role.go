@@ -3,12 +3,14 @@ package middleware
 import (
 	"errors"
 	"net/http"
+	"slices"
 	"tgiintiz/internal/handler/response"
+	"tgiintiz/internal/models"
 
 	"github.com/gin-gonic/gin"
 )
 
-func RequireAdmin() gin.HandlerFunc {
+func RequireRoles(allowed ...models.RoleID) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		claims := ClaimsFromContext(c)
 		if claims == nil {
@@ -16,8 +18,8 @@ func RequireAdmin() gin.HandlerFunc {
 			return
 		}
 
-		if claims.Role != "admin" {
-			response.Error(c, http.StatusForbidden, "forbidden", errors.New("admin role required"))
+		if !slices.Contains(allowed, claims.RoleID) {
+			response.Error(c, http.StatusForbidden, "forbidden", errors.New("insufficient permissions"))
 			return
 		}
 

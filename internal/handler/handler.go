@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"tgiintiz/internal/handler/middleware"
 	v1 "tgiintiz/internal/handler/v1"
+	"tgiintiz/internal/models"
 	"tgiintiz/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -27,7 +28,7 @@ func (h *Handler) InitRoutes() http.Handler {
 	apiV1 := v1.NewHandler(h.services)
 
 	authMiddleware := middleware.Auth(h.services.Auth)
-	adminMiddleware := middleware.RequireAdmin()
+	adminMiddleware := middleware.RequireRoles(models.RoleAdmin)
 
 	api := router.Group("/api/v1")
 	{
