@@ -1,10 +1,32 @@
 -- name: GetServiceBySlugAndLang :one
-SELECT *
+SELECT
+    id,
+    lang,
+    slug,
+    title,
+    short_desc,
+    full_desc,
+    image_url,
+    standards,
+    equipment,
+    is_active,
+    created_at 
 FROM services
 WHERE slug = $1 AND lang = $2;
 
 -- name: GetServiceByID :one
-SELECT *
+SELECT
+    id,
+    lang,
+    slug,
+    title,
+    short_desc,
+    full_desc,
+    image_url,
+    standards,
+    equipment,
+    is_active,
+    created_at 
 FROM services
 WHERE id = $1;
 
@@ -79,7 +101,7 @@ SELECT
 FROM services s
 JOIN request_services rs ON rs.service_id = s.id
 WHERE rs.request_id = $1
-ORDER BY s.id ASC;
+ORDER BY rs.created_at ASC, s.id ASC;
 
 -- name: ListServicesByLang :many
 SELECT

@@ -8,6 +8,29 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Project struct {
+	ID            int64
+	Lang          string
+	Slug          string
+	Title         string
+	Category      string
+	Location      pgtype.Text
+	CompletedYear pgtype.Int2
+	ShortDesc     string
+	FullDesc      pgtype.Text
+	ImageUrl      pgtype.Text
+	Images        []string
+	IsActive      bool
+	Client        pgtype.Text
+	CreatedAt     pgtype.Timestamptz
+}
+
+type ProjectService struct {
+	ProjectID int64
+	ServiceID int64
+	CreatedAt pgtype.Timestamptz
+}
+
 type RequestAttachment struct {
 	ID        int64
 	RequestID int64
@@ -20,6 +43,7 @@ type RequestAttachment struct {
 type RequestService struct {
 	RequestID int64
 	ServiceID int64
+	CreatedAt pgtype.Timestamptz
 }
 
 type Role struct {

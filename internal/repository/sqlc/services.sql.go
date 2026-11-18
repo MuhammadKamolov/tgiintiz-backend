@@ -106,7 +106,18 @@ func (q *Queries) DeleteService(ctx context.Context, id int64) error {
 }
 
 const getServiceByID = `-- name: GetServiceByID :one
-SELECT id, lang, slug, title, short_desc, full_desc, image_url, standards, equipment, is_active, created_at
+SELECT
+    id,
+    lang,
+    slug,
+    title,
+    short_desc,
+    full_desc,
+    image_url,
+    standards,
+    equipment,
+    is_active,
+    created_at 
 FROM services
 WHERE id = $1
 `
@@ -131,7 +142,18 @@ func (q *Queries) GetServiceByID(ctx context.Context, id int64) (Service, error)
 }
 
 const getServiceBySlugAndLang = `-- name: GetServiceBySlugAndLang :one
-SELECT id, lang, slug, title, short_desc, full_desc, image_url, standards, equipment, is_active, created_at
+SELECT
+    id,
+    lang,
+    slug,
+    title,
+    short_desc,
+    full_desc,
+    image_url,
+    standards,
+    equipment,
+    is_active,
+    created_at 
 FROM services
 WHERE slug = $1 AND lang = $2
 `
@@ -224,7 +246,7 @@ SELECT
 FROM services s
 JOIN request_services rs ON rs.service_id = s.id
 WHERE rs.request_id = $1
-ORDER BY s.id ASC
+ORDER BY rs.created_at ASC, s.id ASC
 `
 
 type ListServicesByRequestIDRow struct {
