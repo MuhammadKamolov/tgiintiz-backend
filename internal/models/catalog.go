@@ -100,21 +100,21 @@ func (in *CreateServiceInput) Prepare() error {
 
 func (in *UpdateServiceInput) ApplyTo(service *Service) error {
 	if in.Title != nil {
-		val := strings.TrimSpace(*in.Title)
-		if val == "" {
+		trimmed := strings.TrimSpace(*in.Title)
+		if trimmed == "" {
 			return fmt.Errorf("%w: title cannot be empty", ErrInvalidInput)
 		}
 
-		service.Title = val
+		service.Title = trimmed
 	}
 
 	if in.ShortDesc != nil {
-		val := strings.TrimSpace(*in.ShortDesc)
-		if val == "" {
+		trimmed := strings.TrimSpace(*in.ShortDesc)
+		if trimmed == "" {
 			return fmt.Errorf("%w: short_desc cannot be empty", ErrInvalidInput)
 		}
 
-		service.ShortDesc = val
+		service.ShortDesc = trimmed
 	}
 
 	if in.FullDesc != nil {
