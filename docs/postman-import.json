@@ -1,694 +1,2005 @@
 {
-	"info": {
-		"_postman_id": "tgiintiz-backend-complete-suite",
-		"name": "TGIINTIZ API (Complete Flow + Catalog)",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-	},
-	"variable": [
-		{
-			"key": "baseUrl",
-			"value": "http://localhost:8080",
-			"type": "string"
-		},
-		{
-			"key": "accessToken",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "refreshToken",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "adminAccessToken",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "surveyId",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "attachmentId",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "serviceId",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "serviceSlug",
-			"value": "engineering-geology",
-			"type": "string"
-		}
-	],
-	"item": [
-		{
-			"name": "01. Auth - Register Client",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"email\": \"client@example.com\",\n    \"password\": \"password123\"\n}"
-				},
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/auth/register",
-					"host": ["{{baseUrl}}"],
-					"path": ["api", "v1", "auth", "register"]
-				}
-			}
-		},
-		{
-			"name": "02. Auth - Login Client (Saves Tokens)",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"const res = pm.response.json();",
-							"if (res.access_token) { pm.collectionVariables.set('accessToken', res.access_token); }",
-							"if (res.refresh_token) { pm.collectionVariables.set('refreshToken', res.refresh_token); }"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"email\": \"client@example.com\",\n    \"password\": \"password123\"\n}"
-				},
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/auth/login",
-					"host": ["{{baseUrl}}"],
-					"path": ["api", "v1", "auth", "login"]
-				}
-			}
-		},
-		{
-			"name": "03. Auth - Login Admin (Saves Admin Token)",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"const res = pm.response.json();",
-							"if (res.access_token) { pm.collectionVariables.set('adminAccessToken', res.access_token); }"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"password123\"\n}"
-				},
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/auth/login",
-					"host": ["{{baseUrl}}"],
-					"path": ["api", "v1", "auth", "login"]
-				}
-			}
-		},
-		{
-			"name": "04. Users - Get Me",
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer {{accessToken}}"
-					}
-				],
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/users/me",
-					"host": ["{{baseUrl}}"],
-					"path": ["api", "v1", "users", "me"]
-				}
-			}
-		},
-		{
-			"name": "05. Admin Catalog - Create Service (Saves ID & Slug)",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"const res = pm.response.json();",
-							"if (res.id) { pm.collectionVariables.set('serviceId', res.id); }",
-							"if (res.slug) { pm.collectionVariables.set('serviceSlug', res.slug); }"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					},
-					{
-						"key": "Authorization",
-						"value": "Bearer {{adminAccessToken}}"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"lang\": \"ru\",\n    \"slug\": \"engineering-geology\",\n    \"title\": \"Инженерно-геологические изыскания\",\n    \"short_desc\": \"Комплексное изучение грунтов и подземных вод площадки строительства\",\n    \"full_desc\": \"Бурение разведочных скважин, статическое и динамическое зондирование, лабораторные испытания физико-механических свойств грунтов.\",\n    \"image_url\": \"/uploads/services/geology.jpg\",\n    \"standards\": [\"ГОСТ 25100-2020\", \"СП 47.13330.2016\"],\n    \"equipment\": [\"Буровая установка УРБ-2А2\", \"Комплект статического зондирования\"],\n    \"is_active\": true\n}"
-				},
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/admin/services",
-					"host": ["{{baseUrl}}"],
-					"path": ["api", "v1", "admin", "services"]
-				}
-			}
-		},
-		{
-			"name": "06. Admin Catalog - Create Service (Negative: Invalid Lang)",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					},
-					{
-						"key": "Authorization",
-						"value": "Bearer {{adminAccessToken}}"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"lang\": \"de\",\n    \"slug\": \"test-service\",\n    \"title\": \"Тестовая услуга\",\n    \"short_desc\": \"Проверка валидации языка\"\n}"
-				},
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/admin/services",
-					"host": ["{{baseUrl}}"],
-					"path": ["api", "v1", "admin", "services"]
-				}
-			}
-		},
-		{
-			"name": "07. Admin Catalog - Get Service By ID",
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer {{adminAccessToken}}"
-					}
-				],
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/admin/services/{{serviceId}}",
-					"host": ["{{baseUrl}}"],
-					"path": ["api", "v1", "admin", "services", "{{serviceId}}"]
-				}
-			}
-		},
-		{
-			"name": "08. Admin Catalog - Update Service (PATCH)",
-			"request": {
-				"method": "PATCH",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					},
-					{
-						"key": "Authorization",
-						"value": "Bearer {{adminAccessToken}}"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"title\": \"Инженерно-геологические изыскания (обновлено)\",\n    \"standards\": [\"ГОСТ 25100-2020\", \"СП 47.13330.2016\", \"ГОСТ 12248-2010\"],\n    \"is_active\": true\n}"
-				},
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/admin/services/{{serviceId}}",
-					"host": ["{{baseUrl}}"],
-					"path": ["api", "v1", "admin", "services", "{{serviceId}}"]
-				}
-			}
-		},
-		{
-			"name": "09. Public Catalog - List Services By Lang",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/services?lang=ru",
-					"host": ["{{baseUrl}}"],
-					"path": ["api", "v1", "services"],
-					"query": [
-						{
-							"key": "lang",
-							"value": "ru"
-						}
-					]
-				}
-			}
-		},
-		{
-			"name": "10. Public Catalog - Get Service By Slug",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/services/{{serviceSlug}}?lang=ru",
-					"host": ["{{baseUrl}}"],
-					"path": ["api", "v1", "services", "{{serviceSlug}}"],
-					"query": [
-						{
-							"key": "lang",
-							"value": "ru"
-						}
-					]
-				}
-			}
-		},
-		{
-			"name": "11. Surveys - Create Survey (Saves ID)",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"const res = pm.response.json();",
-							"if (res.id) { pm.collectionVariables.set('surveyId', res.id); }"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					},
-					{
-						"key": "Authorization",
-						"value": "Bearer {{accessToken}}"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"title\": \"Инженерно-геологические изыскания объекта №1\",\n    \"location\": \"г. Душанбе, район Сино\",\n    \"description\": \"Бурение скважин глубиной до 15 метров с отбором проб грунта\"\n}"
-				},
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/surveys",
-					"host": ["{{baseUrl}}"],
-					"path": ["api", "v1", "surveys"]
-				}
-			}
-		},
-		{
-			"name": "12. Surveys - Create Survey (Negative: Empty Title)",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					},
-					{
-						"key": "Authorization",
-						"value": "Bearer {{accessToken}}"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"title\": \"\",\n    \"description\": \"Проверка валидации заголовка\"\n}"
-				},
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/surveys",
-					"host": ["{{baseUrl}}"],
-					"path": ["api", "v1", "surveys"]
-				}
-			}
-		},
-		{
-			"name": "13. Surveys - List My Surveys (Pagination)",
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer {{accessToken}}"
-					}
-				],
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/surveys?page=1&page_size=10",
-					"host": ["{{baseUrl}}"],
-					"path": ["api", "v1", "surveys"],
-					"query": [
-						{
-							"key": "page",
-							"value": "1"
-						},
-						{
-							"key": "page_size",
-							"value": "10"
-						}
-					]
-				}
-			}
-		},
-		{
-			"name": "14. Surveys - Get By ID",
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer {{accessToken}}"
-					}
-				],
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/surveys/{{surveyId}}",
-					"host": ["{{baseUrl}}"],
-					"path": ["api", "v1", "surveys", "{{surveyId}}"]
-				}
-			}
-		},
-		{
-			"name": "15. Surveys - Get By ID (Negative: 404)",
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer {{accessToken}}"
-					}
-				],
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/surveys/99999",
-					"host": ["{{baseUrl}}"],
-					"path": ["api", "v1", "surveys", "99999"]
-				}
-			}
-		},
-		{
-			"name": "16. Survey Services - Add Service To Survey",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					},
-					{
-						"key": "Authorization",
-						"value": "Bearer {{accessToken}}"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"service_id\": {{serviceId}}\n}"
-				},
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/surveys/{{surveyId}}/services",
-					"host": ["{{baseUrl}}"],
-					"path": ["api", "v1", "surveys", "{{surveyId}}", "services"]
-				}
-			}
-		},
-		{
-			"name": "17. Survey Services - List Survey Services",
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer {{accessToken}}"
-					}
-				],
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/surveys/{{surveyId}}/services",
-					"host": ["{{baseUrl}}"],
-					"path": ["api", "v1", "surveys", "{{surveyId}}", "services"]
-				}
-			}
-		},
-		{
-			"name": "18. Survey Services - Remove All Services From Survey",
-			"request": {
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer {{accessToken}}"
-					}
-				],
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/surveys/{{surveyId}}/services",
-					"host": ["{{baseUrl}}"],
-					"path": ["api", "v1", "surveys", "{{surveyId}}", "services"]
-				}
-			}
-		},
-		{
-			"name": "19. Attachments - Upload File (Saves Attachment ID)",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"const res = pm.response.json();",
-							"if (res.ID) { pm.collectionVariables.set('attachmentId', res.ID); }",
-							"if (res.id) { pm.collectionVariables.set('attachmentId', res.id); }"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer {{accessToken}}"
-					}
-				],
-				"body": {
-					"mode": "formdata",
-					"formdata": [
-						{
-							"key": "file",
-							"type": "file",
-							"src": []
-						}
-					]
-				},
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/surveys/{{surveyId}}/attachments",
-					"host": ["{{baseUrl}}"],
-					"path": ["api", "v1", "surveys", "{{surveyId}}", "attachments"]
-				}
-			}
-		},
-		{
-			"name": "20. Attachments - List Files For Survey",
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer {{accessToken}}"
-					}
-				],
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/surveys/{{surveyId}}/attachments",
-					"host": ["{{baseUrl}}"],
-					"path": ["api", "v1", "surveys", "{{surveyId}}", "attachments"]
-				}
-			}
-		},
-		{
-			"name": "21. Attachments - Delete Attachment",
-			"request": {
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer {{accessToken}}"
-					}
-				],
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/attachments/{{attachmentId}}",
-					"host": ["{{baseUrl}}"],
-					"path": ["api", "v1", "attachments", "{{attachmentId}}"]
-				}
-			}
-		},
-		{
-			"name": "22. Admin Surveys - List All Surveys",
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer {{adminAccessToken}}"
-					}
-				],
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/admin/surveys?page=1&page_size=10",
-					"host": ["{{baseUrl}}"],
-					"path": ["api", "v1", "admin", "surveys"],
-					"query": [
-						{
-							"key": "page",
-							"value": "1"
-						},
-						{
-							"key": "page_size",
-							"value": "10"
-						}
-					]
-				}
-			}
-		},
-		{
-			"name": "23. Admin Surveys - Update Survey Status",
-			"request": {
-				"method": "PATCH",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					},
-					{
-						"key": "Authorization",
-						"value": "Bearer {{adminAccessToken}}"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"status\": \"in_progress\"\n}"
-				},
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/admin/surveys/{{surveyId}}/status",
-					"host": ["{{baseUrl}}"],
-					"path": ["api", "v1", "admin", "surveys", "{{surveyId}}", "status"]
-				}
-			}
-		},
-		{
-			"name": "24. Admin Surveys - Delete Survey",
-			"request": {
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer {{adminAccessToken}}"
-					}
-				],
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/admin/surveys/{{surveyId}}",
-					"host": ["{{baseUrl}}"],
-					"path": ["api", "v1", "admin", "surveys", "{{surveyId}}"]
-				}
-			}
-		},
-		{
-			"name": "25. Admin Catalog - Delete Service",
-			"request": {
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer {{adminAccessToken}}"
-					}
-				],
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/admin/services/{{serviceId}}",
-					"host": ["{{baseUrl}}"],
-					"path": ["api", "v1", "admin", "services", "{{serviceId}}"]
-				}
-			}
-		},
-		{
-			"name": "26. Auth - Refresh Token",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"const res = pm.response.json();",
-							"if (res.access_token) { pm.collectionVariables.set('accessToken', res.access_token); }",
-							"if (res.refresh_token) { pm.collectionVariables.set('refreshToken', res.refresh_token); }"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"refresh_token\": \"{{refreshToken}}\"\n}"
-				},
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/auth/refresh",
-					"host": ["{{baseUrl}}"],
-					"path": ["api", "v1", "auth", "refresh"]
-				}
-			}
-		},
-		{
-			"name": "27. Auth - Logout",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"refresh_token\": \"{{refreshToken}}\"\n}"
-				},
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/auth/logout",
-					"host": ["{{baseUrl}}"],
-					"path": ["api", "v1", "auth", "logout"]
-				}
-			}
-		}
-	]
+  "info": {
+    "_postman_id": "tgiintiz-backend-full-e2e-suite",
+    "name": "TGIINTIZ API (Full E2E: Auth + Catalog + Projects + Surveys)",
+    "description": "Полная коллекция эндпоинтов TGIINTIZ Backend с автоматическими тестами (pm.test) и пробросом переменных окружения. Можно запускать целиком через Collection Runner.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminAccessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "serviceId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "serviceSlug",
+      "value": "engineering-geology",
+      "type": "string"
+    },
+    {
+      "key": "projectId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "projectSlug",
+      "value": "rogun-hpp-geology",
+      "type": "string"
+    },
+    {
+      "key": "surveyId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "attachmentId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01. Auth & Users",
+      "item": [
+        {
+          "name": "01.1 Auth - Register Client",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201 Created or 409 Conflict (already registered)', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([201, 409]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"client@example.com\",\n    \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
+            }
+          }
+        },
+        {
+          "name": "01.2 Auth - Register (Negative: Weak Password 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Error message returned', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('error');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"bad@example.com\",\n    \"password\": \"123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
+            }
+          }
+        },
+        {
+          "name": "01.3 Auth - Login Client (Saves Tokens)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const res = pm.response.json();",
+                  "pm.test('Tokens received', function () {",
+                  "    pm.expect(res.access_token).to.be.a('string').and.not.empty;",
+                  "    pm.expect(res.refresh_token).to.be.a('string').and.not.empty;",
+                  "});",
+                  "if (res.access_token) { pm.collectionVariables.set('accessToken', res.access_token); }",
+                  "if (res.refresh_token) { pm.collectionVariables.set('refreshToken', res.refresh_token); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"client@example.com\",\n    \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "01.4 Auth - Login Admin (Saves Admin Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const res = pm.response.json();",
+                  "pm.test('Admin access token received', function () {",
+                  "    pm.expect(res.access_token).to.be.a('string').and.not.empty;",
+                  "});",
+                  "if (res.access_token) { pm.collectionVariables.set('adminAccessToken', res.access_token); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "01.5 Users - Get Me",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('User profile matches client', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.email).to.eql('client@example.com');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "01.6 Users - Get Me (Negative: Unauthorized 401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "me"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Catalog (Services)",
+      "item": [
+        {
+          "name": "02.1 Admin Catalog - Create Service (Saves ID & Slug)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "const res = pm.response.json();",
+                  "pm.test('Service fields match', function () {",
+                  "    pm.expect(res.id).to.be.a('number');",
+                  "    pm.expect(res.slug).to.eql('engineering-geology');",
+                  "    pm.expect(res.is_active).to.eql(true);",
+                  "});",
+                  "if (res.id) { pm.collectionVariables.set('serviceId', res.id); }",
+                  "if (res.slug) { pm.collectionVariables.set('serviceSlug', res.slug); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"lang\": \"ru\",\n    \"slug\": \"engineering-geology\",\n    \"title\": \"Инженерно-геологические изыскания\",\n    \"short_desc\": \"Комплексное изучение грунтов и подземных вод площадки строительства\",\n    \"full_desc\": \"Бурение разведочных скважин, статическое и динамическое зондирование, лабораторные испытания физико-механических свойств грунтов.\",\n    \"image_url\": \"/uploads/services/geology.jpg\",\n    \"standards\": [\"ГОСТ 25100-2020\", \"СП 47.13330.2016\"],\n    \"equipment\": [\"Буровая установка УРБ-2А2\", \"Комплект статического зондирования\"],\n    \"is_active\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/services",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "services"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02.2 Admin Catalog - Create Service (Negative: Invalid Lang 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"lang\": \"de\",\n    \"slug\": \"test-service\",\n    \"title\": \"Тестовая услуга\",\n    \"short_desc\": \"Проверка валидации языка\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/services",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "services"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02.3 Admin Catalog - Get Service By ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('ID matches serviceId', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.id).to.eql(Number(pm.collectionVariables.get('serviceId')));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/services/{{serviceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "services",
+                "{{serviceId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02.4 Admin Catalog - Update Service (PATCH)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Title updated', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.title).to.include('обновлено');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Инженерно-геологические изыскания (обновлено)\",\n    \"standards\": [\"ГОСТ 25100-2020\", \"СП 47.13330.2016\", \"ГОСТ 12248-2010\"],\n    \"is_active\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/services/{{serviceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "services",
+                "{{serviceId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02.5 Public Catalog - List Services By Lang",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response is non-empty array', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.be.an('array').that.is.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/services?lang=ru",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "services"
+              ],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ru"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "02.6 Public Catalog - Get Service By Slug",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Slug matches', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.slug).to.eql(pm.collectionVariables.get('serviceSlug'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/services/{{serviceSlug}}?lang=ru",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "services",
+                "{{serviceSlug}}"
+              ],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ru"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Projects (Portfolio)",
+      "item": [
+        {
+          "name": "03.1 Admin Projects - Create Project (Saves ID & Slug)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "const res = pm.response.json();",
+                  "pm.test('Project created with valid fields', function () {",
+                  "    pm.expect(res.id).to.be.a('number');",
+                  "    pm.expect(res.slug).to.eql('rogun-hpp-geology');",
+                  "    pm.expect(res.completed_year).to.eql(2025);",
+                  "    pm.expect(res.images).to.be.an('array').with.lengthOf(2);",
+                  "    pm.expect(res.services).to.be.an('array');",
+                  "});",
+                  "if (res.id) { pm.collectionVariables.set('projectId', res.id); }",
+                  "if (res.slug) { pm.collectionVariables.set('projectSlug', res.slug); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"lang\": \"ru\",\n    \"slug\": \"rogun-hpp-geology\",\n    \"title\": \"Инженерные изыскания на участке Рогунской ГЭС\",\n    \"category\": \"Гидротехнические сооружения\",\n    \"location\": \"г. Рогун, Республика Таджикистан\",\n    \"completed_year\": 2025,\n    \"short_desc\": \"Комплекс инженерно-геологических и геодезических работ для обоснования строительства\",\n    \"full_desc\": \"Выполнено колонковое бурение скважин глубиной до 80 м, геофизическое профилирование и лабораторные испытания скальных грунтов.\",\n    \"image_url\": \"/uploads/projects/rogun-main.jpg\",\n    \"images\": [\n        \"/uploads/projects/rogun-1.jpg\",\n        \"/uploads/projects/rogun-2.jpg\"\n    ],\n    \"is_active\": true,\n    \"client\": \"ОАО «Рогунская ГЭС»\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/projects",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "projects"
+              ]
+            }
+          }
+        },
+        {
+          "name": "03.2 Admin Projects - Create Project (Negative: Duplicate Slug 409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"lang\": \"ru\",\n    \"slug\": \"rogun-hpp-geology\",\n    \"title\": \"Дубликат проекта\",\n    \"category\": \"Энергетика\",\n    \"short_desc\": \"Проверка уникальности slug\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/projects",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "projects"
+              ]
+            }
+          }
+        },
+        {
+          "name": "03.3 Admin Projects - Create Project (Negative: Invalid Year 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"lang\": \"ru\",\n    \"slug\": \"invalid-year-project\",\n    \"title\": \"Проект с некорректным годом\",\n    \"category\": \"Энергетика\",\n    \"completed_year\": 1800,\n    \"short_desc\": \"Проверка диапазона completed_year (1950..2100)\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/projects",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "projects"
+              ]
+            }
+          }
+        },
+        {
+          "name": "03.4 Admin Projects - Create Project (Negative: Forbidden for Client 403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"lang\": \"ru\",\n    \"slug\": \"client-forbidden-project\",\n    \"title\": \"Попытка создания клиентом\",\n    \"category\": \"Тест\",\n    \"short_desc\": \"Клиент не должен иметь доступ к админке\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/projects",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "projects"
+              ]
+            }
+          }
+        },
+        {
+          "name": "03.5 Admin Projects - Get Project By ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Project ID matches', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.id).to.eql(Number(pm.collectionVariables.get('projectId')));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/projects/{{projectId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "projects",
+                "{{projectId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "03.6 Admin Projects - Update Project (PATCH)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Fields updated partially', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.title).to.include('Этап 2');",
+                  "    pm.expect(res.completed_year).to.eql(2026);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Инженерные изыскания на участке Рогунской ГЭС (Этап 2)\",\n    \"completed_year\": 2026,\n    \"is_active\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/projects/{{projectId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "projects",
+                "{{projectId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "03.7 Admin Project Services - Add Service To Project",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"service_id\": {{serviceId}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/projects/{{projectId}}/services",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "projects",
+                "{{projectId}}",
+                "services"
+              ]
+            }
+          }
+        },
+        {
+          "name": "03.8 Admin Project Services - Add Service (Negative: 404 Non-existent Service)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404 Not Found (FK violation handled)', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"service_id\": 999999\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/projects/{{projectId}}/services",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "projects",
+                "{{projectId}}",
+                "services"
+              ]
+            }
+          }
+        },
+        {
+          "name": "03.9 Admin Project Services - List Project Services",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Linked service returned', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.be.an('array').with.lengthOf(1);",
+                  "    pm.expect(res[0].id).to.eql(Number(pm.collectionVariables.get('serviceId')));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/projects/{{projectId}}/services",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "projects",
+                "{{projectId}}",
+                "services"
+              ]
+            }
+          }
+        },
+        {
+          "name": "03.10 Public Projects - List Active Projects (Pagination)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Projects list is array', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.be.an('array').that.is.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/projects?lang=ru&page=1&page_size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects"
+              ],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ru"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "03.11 Public Projects - Filter Projects By Service ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Project linked to service is found', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.be.an('array').that.is.not.empty;",
+                  "    pm.expect(res[0].id).to.eql(Number(pm.collectionVariables.get('projectId')));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/projects?lang=ru&service_id={{serviceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects"
+              ],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ru"
+                },
+                {
+                  "key": "service_id",
+                  "value": "{{serviceId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "03.12 Public Projects - Get Project By Slug (With Services)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Project contains attached services', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.slug).to.eql(pm.collectionVariables.get('projectSlug'));",
+                  "    pm.expect(res.services).to.be.an('array').with.lengthOf(1);",
+                  "    pm.expect(res.services[0].id).to.eql(Number(pm.collectionVariables.get('serviceId')));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/projects/{{projectSlug}}?lang=ru",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectSlug}}"
+              ],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ru"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "03.13 Public Projects - Get Project By Slug (Negative: 404 Not Found)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/projects/non-existent-slug?lang=ru",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "non-existent-slug"
+              ],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ru"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. Surveys & Attachments",
+      "item": [
+        {
+          "name": "04.1 Surveys - Create Survey (Saves ID)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "const res = pm.response.json();",
+                  "if (res.id) { pm.collectionVariables.set('surveyId', res.id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Инженерно-геологические изыскания объекта №1\",\n    \"location\": \"г. Душанбе, район Сино\",\n    \"description\": \"Бурение скважин глубиной до 15 метров с отбором проб грунта\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/surveys",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "surveys"
+              ]
+            }
+          }
+        },
+        {
+          "name": "04.2 Surveys - Create Survey (Negative: Empty Title 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"\",\n    \"description\": \"Проверка валидации заголовка\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/surveys",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "surveys"
+              ]
+            }
+          }
+        },
+        {
+          "name": "04.3 Surveys - List My Surveys (Pagination)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/surveys?page=1&page_size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "surveys"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "04.4 Surveys - Get By ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/surveys/{{surveyId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "surveys",
+                "{{surveyId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "04.5 Surveys - Get By ID (Negative: 404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/surveys/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "surveys",
+                "999999"
+              ]
+            }
+          }
+        },
+        {
+          "name": "04.6 Survey Services - Add Service To Survey",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"service_id\": {{serviceId}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/surveys/{{surveyId}}/services",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "surveys",
+                "{{surveyId}}",
+                "services"
+              ]
+            }
+          }
+        },
+        {
+          "name": "04.7 Survey Services - List Survey Services",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/surveys/{{surveyId}}/services",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "surveys",
+                "{{surveyId}}",
+                "services"
+              ]
+            }
+          }
+        },
+        {
+          "name": "04.8 Survey Services - Remove Services From Survey",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 204 No Content', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/surveys/{{surveyId}}/services",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "surveys",
+                "{{surveyId}}",
+                "services"
+              ]
+            }
+          }
+        },
+        {
+          "name": "04.9 Attachments - Upload File (Select File Manually)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const res = pm.response.json();",
+                  "    if (res.id) { pm.collectionVariables.set('attachmentId', res.id); }",
+                  "    if (res.ID) { pm.collectionVariables.set('attachmentId', res.ID); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/surveys/{{surveyId}}/attachments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "surveys",
+                "{{surveyId}}",
+                "attachments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "04.10 Attachments - List Files For Survey",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/surveys/{{surveyId}}/attachments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "surveys",
+                "{{surveyId}}",
+                "attachments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "04.11 Admin Surveys - List All Surveys",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/surveys?page=1&page_size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "surveys"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "04.12 Admin Surveys - Update Survey Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Status updated to in_progress', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.status).to.eql('in_progress');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"status\": \"in_progress\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/surveys/{{surveyId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "surveys",
+                "{{surveyId}}",
+                "status"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05. Cleanup & Auth Logout",
+      "item": [
+        {
+          "name": "05.1 Admin Project Services - Remove Service From Project",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 204 No Content', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/projects/{{projectId}}/services/{{serviceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "projects",
+                "{{projectId}}",
+                "services",
+                "{{serviceId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "05.2 Admin Projects - Delete Project",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 204 No Content', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/projects/{{projectId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "projects",
+                "{{projectId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "05.3 Admin Catalog - Delete Service",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 204 No Content', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/services/{{serviceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "services",
+                "{{serviceId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "05.4 Attachments - Delete Attachment (If Uploaded)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 204 or 400/404 if skipped', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([204, 400, 404]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/attachments/{{attachmentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "attachments",
+                "{{attachmentId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "05.5 Admin Surveys - Delete Survey",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 204 No Content', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/surveys/{{surveyId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "surveys",
+                "{{surveyId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "05.6 Auth - Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const res = pm.response.json();",
+                  "if (res.access_token) { pm.collectionVariables.set('accessToken', res.access_token); }",
+                  "if (res.refresh_token) { pm.collectionVariables.set('refreshToken', res.refresh_token); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"refresh_token\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "refresh"
+              ]
+            }
+          }
+        },
+        {
+          "name": "05.7 Auth - Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 204 No Content', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"refresh_token\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "logout"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
 }

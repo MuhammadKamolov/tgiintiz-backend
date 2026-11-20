@@ -82,18 +82,17 @@ func (h *Handler) AddServiceToProject(c *gin.Context) {
 		return
 	}
 
-	serviceID, err := strconv.ParseInt("serviceId", 10, 64)
-	if err != nil {
-		response.Error(c, http.StatusBadRequest, msgInvalidServiceID, err)
+	var req addProjectServiceRequest
+	if !decodeJSON(c, &req) {
 		return
 	}
 
-	if err := h.service.Project.AddService(c.Request.Context(), projectID, serviceID); err != nil {
+	if err := h.service.Project.AddService(c.Request.Context(), projectID, req.ServiceID); err != nil {
 		response.ServiceError(c, err)
 		return
 	}
 
-	c.Status(http.StatusNoContent)
+	c.Status(http.StatusCreated)
 }
 func (h *Handler) ListProjectServices(c *gin.Context) {
 	projectID, err := parseID(c)
@@ -122,7 +121,7 @@ func (h *Handler) RemoveServiceFromProject(c *gin.Context) {
 		return
 	}
 
-	serviceID, err := strconv.ParseInt("serviceId", 10, 64)
+	serviceID, err := strconv.ParseInt(c.Param("serviceId"), 10, 64)
 	if err != nil {
 		response.Error(c, http.StatusBadRequest, msgInvalidServiceID, err)
 		return
@@ -142,9 +141,24 @@ func (h *Handler) ListProjects(c *gin.Context) {
 		lang = string(models.DefaultLang)
 	}
 
-	pagination := parsePagination(c)
+	var (
+		projects []*models.Project
+		err      error
+	)
 
-	projects, err := h.service.Project.ListActiveByLang(c.Request.Context(), lang, pagination)
+	if serviceIDStr := c.Query("service_id"); serviceIDStr != "" {
+		serviceID, parseErr := strconv.ParseInt(serviceIDStr, 10, 64)
+		if parseErr != nil {
+			response.Error(c, http.StatusBadRequest, msgInvalidServiceID, parseErr)
+			return
+		}
+
+		projects, err = h.service.Project.ListByServiceID(c.Request.Context(), serviceID, lang)
+	} else {
+		pagination := parsePagination(c)
+		projects, err = h.service.Project.ListActiveByLang(c.Request.Context(), lang, pagination)
+	}
+
 	if err != nil {
 		response.ServiceError(c, err)
 		return
@@ -157,8 +171,10 @@ func (h *Handler) ListProjects(c *gin.Context) {
 
 	response.JSON(c, http.StatusOK, resp)
 }
+
 func (h *Handler) GetProjectBySlug(c *gin.Context) {
-	slug := c.Query("slug")
+	slug := c.Param("slug")
+
 	lang := c.Query("lang")
 	if lang == "" {
 		lang = string(models.DefaultLang)

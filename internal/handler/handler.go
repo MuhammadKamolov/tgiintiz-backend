@@ -46,6 +46,12 @@ func (h *Handler) InitRoutes() http.Handler {
 			services.GET("/:slug", apiV1.GetServiceBySlug)
 		}
 
+		projects := api.Group("/projects")
+		{
+			projects.GET("", apiV1.ListProjects)
+			projects.GET("/:slug", apiV1.GetProjectBySlug)
+		}
+
 		users := api.Group("/users")
 		users.Use(authMiddleware)
 		{
@@ -89,6 +95,18 @@ func (h *Handler) InitRoutes() http.Handler {
 				adminServices.GET("/:id", apiV1.GetServiceByID)
 				adminServices.PATCH("/:id", apiV1.UpdateService)
 				adminServices.DELETE("/:id", apiV1.DeleteService)
+			}
+
+			adminProjects := admin.Group("/projects")
+			{
+				adminProjects.POST("", apiV1.CreateProject)
+				adminProjects.GET("/:id", apiV1.GetProjectByID)
+				adminProjects.PATCH("/:id", apiV1.UpdateProject)
+				adminProjects.DELETE("/:id", apiV1.DeleteProject)
+
+				adminProjects.POST("/:id/services", apiV1.AddServiceToProject)
+				adminProjects.GET("/:id/services", apiV1.ListProjectServices)
+				adminProjects.DELETE("/:id/services/:serviceId", apiV1.RemoveServiceFromProject)
 			}
 		}
 	}
