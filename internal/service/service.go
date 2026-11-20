@@ -6,6 +6,7 @@ import (
 	"tgiintiz/internal/repository"
 	"tgiintiz/internal/service/auth"
 	"tgiintiz/internal/service/catalog"
+	"tgiintiz/internal/service/project"
 	"tgiintiz/internal/service/survey"
 	"tgiintiz/internal/service/user"
 	"tgiintiz/pkg/storage"
@@ -16,8 +17,8 @@ type Services struct {
 	User    UserService
 	Survey  SurveyService
 	Catalog CatalogService
+	Project ProjectService
 }
-
 type AuthService interface {
 	Register(ctx context.Context, in models.RegisterInput) (*models.User, error)
 	Login(ctx context.Context, in models.LoginInput) (*models.TokenPair, error)
@@ -25,11 +26,9 @@ type AuthService interface {
 	Refresh(ctx context.Context, refreshToken string) (*models.TokenPair, error)
 	Logout(ctx context.Context, refreshToken string) error
 }
-
 type UserService interface {
 	GetByID(ctx context.Context, userID int64) (*models.User, error)
 }
-
 type SurveyService interface {
 	Create(ctx context.Context, userID int64, in models.SurveyRequestInput) (*models.SurveyRequest, error)
 	GetByID(ctx context.Context, requestID int64, userID int64) (*models.SurveyRequest, error)
@@ -47,7 +46,6 @@ type SurveyService interface {
 	ListServices(ctx context.Context, requestID int64, claims models.TokenClaims) ([]*models.ServiceCard, error)
 	RemoveServices(ctx context.Context, requestID int64, claims models.TokenClaims) error
 }
-
 type CatalogService interface {
 	Create(ctx context.Context, in models.CreateServiceInput) (*models.Service, error)
 	GetByID(ctx context.Context, serviceID int64) (*models.Service, error)
@@ -57,16 +55,32 @@ type CatalogService interface {
 	Delete(ctx context.Context, serviceID int64) error
 }
 
+type ProjectService interface {
+	Create(ctx context.Context, in models.CreateProjectInput) (*models.Project, error)
+	GetByID(ctx context.Context, projectID int64) (*models.Project, error)
+	GetBySlugAndLang(ctx context.Context, slug, lang string) (*models.Project, error)
+	ListActiveByLang(ctx context.Context, lang string, p models.Pagination) ([]*models.Project, error)
+	ListByServiceID(ctx context.Context, serviceID int64, lang string) ([]*models.Project, error)
+	Update(ctx context.Context, projectID int64, in models.UpdateProjectInput) (*models.Project, error)
+	Delete(ctx context.Context, projectID int64) error
+
+	AddService(ctx context.Context, projectID, serviceID int64) error
+	ListServicesByProjectID(ctx context.Context, projectID int64) ([]*models.ServiceCard, error)
+	RemoveService(ctx context.Context, projectID, serviceID int64) error
+}
+
 func NewServices(repos *repository.Repositories, tokenCfg auth.TokenConfig, fileStorage storage.FileStorage) *Services {
 	authService := auth.New(repos.User, repos.Session, tokenCfg)
 	userService := user.New(repos.User)
 	surveyService := survey.New(repos.Survey, repos.Attachment, repos.Catalog, fileStorage)
 	catalogService := catalog.New(repos.Catalog)
+	projectService := project.New(repos.Project)
 
 	return &Services{
 		Auth:    authService,
 		User:    userService,
 		Survey:  surveyService,
 		Catalog: catalogService,
+		Project: projectService,
 	}
 }

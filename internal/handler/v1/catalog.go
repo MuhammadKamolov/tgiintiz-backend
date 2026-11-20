@@ -10,7 +10,6 @@ import (
 
 func (h *Handler) CreateService(c *gin.Context) {
 	var req createServiceRequest
-
 	if !decodeJSON(c, &req) {
 		return
 	}

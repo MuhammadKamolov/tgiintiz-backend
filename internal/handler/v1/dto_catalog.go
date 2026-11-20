@@ -20,7 +20,6 @@ type createServiceRequest struct {
 
 func (req createServiceRequest) toInput() models.CreateServiceInput {
 	isActive := true
-
 	if req.IsActive != nil {
 		isActive = *req.IsActive
 	}

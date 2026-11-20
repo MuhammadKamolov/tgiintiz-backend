@@ -32,7 +32,6 @@ func (h *Handler) InitRoutes() http.Handler {
 
 	api := router.Group("/api/v1")
 	{
-		// 1. Публичный контур (без авторизации)
 		auth := api.Group("/auth")
 		{
 			auth.POST("/register", apiV1.Register)
@@ -47,7 +46,6 @@ func (h *Handler) InitRoutes() http.Handler {
 			services.GET("/:slug", apiV1.GetServiceBySlug)
 		}
 
-		// 2. Клиентский контур (требуется авторизация)
 		users := api.Group("/users")
 		users.Use(authMiddleware)
 		{
@@ -75,7 +73,6 @@ func (h *Handler) InitRoutes() http.Handler {
 			attachments.DELETE("/:id", apiV1.DeleteAttachment)
 		}
 
-		// 3. Админский контур (авторизация + роль admin)
 		admin := api.Group("/admin")
 		admin.Use(authMiddleware, adminMiddleware)
 		{
