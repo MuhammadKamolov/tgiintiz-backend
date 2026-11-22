@@ -266,6 +266,3 @@ func fromPgInt2(v pgtype.Int2) *int16 {
 func toText(s string) pgtype.Text {
 	return pgtype.Text{String: s, Valid: s != ""}
 }
-
-// 1) ssl rend как зарегинироват секретный ключ для jwt
-// 2) jwt io

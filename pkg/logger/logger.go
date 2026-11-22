@@ -68,7 +68,7 @@ func New(cfg Config) (*slog.Logger, func() error, error) {
 
 	consoleHandler := tint.NewHandler(os.Stdout, &tint.Options{
 		Level:      cfg.Level,
-		TimeFormat: time.TimeOnly, // формат "15:04:05" вместо длинного ISO-8601
+		TimeFormat: time.TimeOnly,
 		NoColor:    false,
 	})
 

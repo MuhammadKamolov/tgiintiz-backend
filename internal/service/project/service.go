@@ -159,5 +159,3 @@ func normalizeLang(lang string) string {
 func normalizeSlug(slug string) string {
 	return strings.TrimSpace(strings.ToLower(slug))
 }
-
-// генерация ключа токена через ssl rander
