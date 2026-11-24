@@ -19,6 +19,8 @@ import (
 	"tgiintiz/pkg/redis"
 	"tgiintiz/pkg/storage"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 func Run() error {
@@ -81,6 +83,10 @@ func Run() error {
 		AccessTTL:  cfg.JWT.AccessTTL,
 		RefreshTTL: cfg.JWT.RefreshTTL,
 	}, storage)
+
+	if cfg.App.Env != logger.EnvLocal {
+		gin.SetMode(gin.ReleaseMode)
+	}
 
 	handlers := handler.NewHandler(service)
 

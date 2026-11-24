@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"log/slog"
+	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -13,11 +14,21 @@ func Logging() gin.HandlerFunc {
 
 		c.Next()
 
-		slog.InfoContext(c.Request.Context(), "http request",
+		status := c.Writer.Status()
+		level := slog.LevelInfo
+		switch {
+		case status >= http.StatusInternalServerError:
+			level = slog.LevelError
+		case status >= http.StatusBadRequest:
+			level = slog.LevelWarn
+		}
+
+		slog.Log(c.Request.Context(), level, "http request",
 			"method", c.Request.Method,
 			"path", c.Request.URL.Path,
-			"status", c.Writer.Status(),
-			"duration", time.Since(start),
+			"status", status,
+			"duration", time.Since(start).Round(time.Millisecond).String(),
+			"ip", c.ClientIP(),
 		)
 	}
 }

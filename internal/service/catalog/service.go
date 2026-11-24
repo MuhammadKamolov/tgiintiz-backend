@@ -47,7 +47,7 @@ func (s *Service) GetBySlugAndLang(ctx context.Context, slug, lang string) (*mod
 	}
 
 	if !models.Lang(lang).IsValid() {
-		return nil, fmt.Errorf("%w: invalid lang (c)", models.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: invalid lang (allowed: ru, tj, en)", models.ErrInvalidInput)
 	}
 
 	service, err := s.catalogRepo.GetBySlugAndLang(ctx, slug, lang)

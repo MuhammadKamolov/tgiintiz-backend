@@ -10,4 +10,5 @@ var (
 	ErrInvalidToken       = errors.New("invalid or expired token")
 	ErrForbidden          = errors.New("access denied")
 	ErrSlugTaken          = errors.New("slug is already taken")
+	ErrInvalidYear        = errors.New("invalid completed year")
 )

@@ -37,7 +37,7 @@ func Error(c *gin.Context, status int, message string, cause error) {
 func ServiceError(c *gin.Context, err error) {
 	switch {
 	case errors.Is(err, models.ErrInvalidInput):
-		Error(c, http.StatusBadRequest, err.Error(), err)
+		Error(c, http.StatusBadRequest, models.ErrInvalidYear.Error(), err)
 	case errors.Is(err, models.ErrInvalidCredentials):
 		Error(c, http.StatusUnauthorized, models.ErrInvalidCredentials.Error(), err)
 	case errors.Is(err, models.ErrEmailTaken):
